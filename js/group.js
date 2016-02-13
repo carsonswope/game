@@ -1,7 +1,9 @@
+var Util = require('./util.js');
+
 function Group() {
   // parent can be position(global level) or another group
   this.origin;
-  this.relativePos;
+  this.dPos;
 
   this.nodes = [];
   this.children = [];
@@ -16,8 +18,6 @@ function Group() {
 
 }
 
-Group.prototype.hi = function() {console.log('hi');};
-
 Group.prototype.setOrigin = function(newOrigin) {
   this.origin = newOrigin;
   if (newOrigin) {
@@ -30,8 +30,25 @@ Group.prototype.addChild = function(child) {
 }
 
 Group.prototype.removeChild = function(child) {
-  this.children.remove(child);
+
+  var i = this.children.indexOf(child);
+  if (i > -1) { this.children.splice(i, 1); }
+
   child.setOrigin();
+}
+
+Group.prototype.screenPos = function (viewPos) {
+  if (!this.origin) {
+    return Util.prototype.vDiff(
+      viewPos,
+      this.dPos
+    );
+  } else {
+    return Util.prototype.vSum(
+      this.dPos,
+      this.origin.screenPos(viewPos)
+    );
+  }
 }
 
 Group.prototype.draw = function() {
