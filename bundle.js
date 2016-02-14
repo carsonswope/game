@@ -73,6 +73,7 @@
 
 	var Util = __webpack_require__(2);
 	var Key = __webpack_require__(3);
+	var Wad = __webpack_require__(8);
 
 	function View(canvas, game) {
 
@@ -146,6 +147,7 @@
 	View.prototype.scroll = function () {
 
 	  var that = this;
+	  var count = 0;
 
 	  var update = function() {
 
@@ -153,10 +155,16 @@
 	    that.game.world.children[l].childrenAngle -= 0.01;
 	    that.game.world.childrenAngle += 0.01;
 	    that.game.world.children[l].children[2].childrenAngle += 0.5;
-	    // that.game.world.childrenAngle += 0.3;
-	    // that.game.world.children[0].childrenAngle += 0.6;
-	    // debugger;
+
 	    that.draw();
+	    count += 1;
+
+	    debugger;
+
+	    rate = 40*(Math.sin(count/100)+1);
+
+	    that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+
 	    requestAnimationFrame(update);
 
 	  }
@@ -654,6 +662,7 @@
 	var Util = __webpack_require__(2);
 	var MtnRange = __webpack_require__(6);
 	var Group = __webpack_require__(7);
+	var Wad = __webpack_require__(8);
 
 	function Game() {
 
@@ -664,6 +673,8 @@
 
 
 	  // debugger;
+
+	  this.wad = new Wad();
 
 	  var p = new Group();
 	  var pp = new Group();
@@ -716,9 +727,6 @@
 	Game.prototype.draw = function (ctx, origin) {
 
 	  this.world.draw(ctx, origin);
-	  ctx.shadowColor = 'purple';
-	  this.total += 1;
-	  ctx.shadowBlur = 50*Math.abs(Math.sin(this.total/50));
 	  ctx.lineJoin = 'bevel';
 
 	};
@@ -998,6 +1006,31 @@
 
 
 	module.exports = Group;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+
+	function Wad() {
+
+	  this.drawings = [];
+	  var drawing;
+
+
+	  for (var i = 2; i <= 9; i++) {
+	    drawing = new Image();
+	    drawing.src = './mw/' + i + '.png';
+	    this.drawings.push(drawing);
+	  }
+
+	};
+
+
+
+	module.exports = Wad;
 
 
 /***/ }

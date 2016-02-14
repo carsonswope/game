@@ -2,6 +2,7 @@ var Mtn = require('./mountain.js');
 var Util = require('./util.js');
 var MtnRange = require('./mtnRange.js');
 var Group = require('./group.js');
+var Wad = require('./wad.js');
 
 function Game() {
 
@@ -12,6 +13,8 @@ Game.prototype.startWorld = function(options) {
 
 
   // debugger;
+
+  this.wad = new Wad();
 
   var p = new Group();
   var pp = new Group();
@@ -64,9 +67,6 @@ Game.prototype.startWorld = function(options) {
 Game.prototype.draw = function (ctx, origin) {
 
   this.world.draw(ctx, origin);
-  ctx.shadowColor = 'purple';
-  this.total += 1;
-  ctx.shadowBlur = 50*Math.abs(Math.sin(this.total/50));
   ctx.lineJoin = 'bevel';
 
 };

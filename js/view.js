@@ -2,6 +2,7 @@
 
 var Util = require('./util.js');
 var Key = require('./keymaster.js');
+var Wad = require('./wad.js');
 
 function View(canvas, game) {
 
@@ -75,6 +76,7 @@ View.prototype.handleKeyup = function (e) {
 View.prototype.scroll = function () {
 
   var that = this;
+  var count = 0;
 
   var update = function() {
 
@@ -82,10 +84,16 @@ View.prototype.scroll = function () {
     that.game.world.children[l].childrenAngle -= 0.01;
     that.game.world.childrenAngle += 0.01;
     that.game.world.children[l].children[2].childrenAngle += 0.5;
-    // that.game.world.childrenAngle += 0.3;
-    // that.game.world.children[0].childrenAngle += 0.6;
-    // debugger;
+
     that.draw();
+    count += 1;
+
+    debugger;
+
+    rate = 40*(Math.sin(count/100)+1);
+
+    that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+
     requestAnimationFrame(update);
 
   }
