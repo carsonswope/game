@@ -7,10 +7,11 @@ function View(canvas, game) {
 
   this.canvas = canvas;
   this.ctx = canvas.getContext('2d');
-  this.xMin = 0;
+  this.xMin = -canvas.width / 2;
   this.yMin = -canvas.height / 1.5;
   this.xRng = canvas.width;
   this.yRng = canvas.height;
+
   this.ctx.width = this.xRng;
   this.ctx.height = this.yRng;
   this.dOrigin = [0,0];
@@ -18,8 +19,6 @@ function View(canvas, game) {
   this.game = game;
   this.game.view = this;
   this.game.startWorld();
-
-  this.draw();
 
   this.bindKeys();
 
@@ -75,32 +74,14 @@ View.prototype.handleKeyup = function (e) {
 View.prototype.scroll = function () {
 
   var that = this;
-  this.draw();
-  // debugger
 
-  function update() {
+  var update = function() {
 
-    that.updateKeys();
-
-    var scale = 20;
-    that.xMin += that.dOrigin[0] * scale;
-    that.yMin += that.dOrigin[1] * scale;
-
+    that.game.world.childrenAngle += 0.01;
+    debugger;
     that.draw();
-
-    var x = that.xMin + 600;
-
-    // debugger;
-    var y = that.game.mtnRanges[0][0].yAtX(x);
-
-
-    that.ctx.beginPath();
-    that.ctx.fillStyle = "green";
-    that.ctx.arc(x - that.xMin, y - that.yMin,8,0, Math.PI * 2);
-    that.ctx.fill();
-
-
     requestAnimationFrame(update);
+
   }
 
   requestAnimationFrame(update);

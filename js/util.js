@@ -21,8 +21,25 @@ Util.prototype.vSum = function(end, start) {
 }
 
 Util.prototype.vDiff = function(origin, pos){
-
   return [pos[0] - origin[0], pos[1] - origin[1]];
-  
+}
+
+Util.prototype.magnitudeAngle = function (magnitude, angle) {
+
+  return [
+    magnitude * Math.sin(angle),
+    magnitude * Math.cos(angle)
+  ];
+
+}
+
+Util.prototype.aOfV = function(vector) {
+  return Math.atan2(vector[0], vector[1]);
+}
+
+Util.prototype.vMag = function(vector) {
+  return Math.sqrt(
+    vector[0] * vector[0] + vector[1] * vector[1]
+  );
 }
 module.exports = Util;

@@ -1,14 +1,10 @@
-var Util = require('./util.js');
+var Util = require('./util.js').prototype;
 
 function Group() {
   // parent can be position(global level) or another group
-  this.origin;
-  this.dPos;
-
-  this.nodes = [];
+  this.dPos = [0,0];
   this.children = [];
-
-  this.angle;
+  this.childrenAngle = 0;
 
   this.material = {};
   this.solid = {};
@@ -38,21 +34,91 @@ Group.prototype.removeChild = function(child) {
 }
 
 Group.prototype.screenPos = function (viewPos) {
+
+  if (!viewPos) { viewPos = [0,0]; }
   if (!this.origin) {
-    return Util.prototype.vDiff(
+
+    return Util.vDiff(
       viewPos,
-      this.dPos
+      this.anglePos()
     );
   } else {
-    return Util.prototype.vSum(
-      this.dPos,
-      this.origin.screenPos(viewPos)
+    return Util.vSum(
+      this.origin.screenPos(viewPos),
+      this.anglePos()
     );
   }
 }
 
-Group.prototype.draw = function() {
+Group.prototype.angleOfDPos = function () {
+  if (!this.originalAngle) {
+    this.originalAngle = Util.aOfV(this.dPos);
+  }
+  return this.originalAngle;
+}
+
+Group.prototype.screenAngle = function () {
+  if (!this.origin) {
+    return 0;
+  } else {
+    return this.origin.childrenAngle + this.origin.screenAngle();
+  }
 
 }
+
+Group.prototype.anglePos = function() {
+
+  var angle = this.angleOfDPos() + this.screenAngle();
+  var magnitude = Util.vMag(this.dPos);
+
+  return Util.magnitudeAngle(magnitude, angle);
+}
+
+Group.prototype.draw = function(ctx, origin) {
+
+  //can be 'point' or 'child'
+  var drawMode = 'child';
+
+  for (var i = 0; i < this.children.length; i++) {
+
+    var kid = this.children[i];
+    var kidPos = kid.screenPos(origin);
+
+    ctx.color = 'black';
+
+    if (!kid.children.length) {
+
+      if (drawMode == 'child') {
+
+        drawMode = 'point';
+        ctx.beginPath();
+        ctx.moveTo(kidPos[0], kidPos[1]);
+
+      } else {
+
+        ctx.lineTo(kidPos[0], kidPos[1]);
+        if (i + 1 === this.children.length ) {
+          ctx.stroke();
+        }
+
+      }
+
+    } else {
+
+      if (drawMode == 'point') {
+        drawMode = 'child';
+        ctx.stroke;
+        ctx.stroke();
+      }
+      kid.draw(ctx);
+
+    }
+  }
+}
+
+Group.prototype.finishDrawing = function (ctx) {
+
+
+};
 
 module.exports = Group;
