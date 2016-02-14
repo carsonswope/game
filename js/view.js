@@ -31,6 +31,7 @@ View.prototype.draw = function () {
   this.ctx.clearRect(0,0,this.ctx.width, this.ctx.height);
   var origin = [this.xMin, this.yMin];
   this.game.draw(this.ctx, origin);
+  debugger;
 
 };
 
@@ -77,8 +78,13 @@ View.prototype.scroll = function () {
 
   var update = function() {
 
+    var l = that.game.world.children.length-1
+    that.game.world.children[l].childrenAngle -= 0.01;
     that.game.world.childrenAngle += 0.01;
-    debugger;
+    that.game.world.children[l].children[2].childrenAngle += 0.5;
+    // that.game.world.childrenAngle += 0.3;
+    // that.game.world.children[0].childrenAngle += 0.6;
+    // debugger;
     that.draw();
     requestAnimationFrame(update);
 

@@ -6,8 +6,27 @@ function Group() {
   this.children = [];
   this.childrenAngle = 0;
 
-  this.material = {};
-  this.solid = {};
+  this.lines = {
+    fromOrigin: false,
+    //ctx.strokeStyle
+    color: 'black',
+    //ctx.lineWidth
+    width: '5',
+
+    connectEnds: true,
+
+
+
+  };
+  this.fill = {
+    filled: false,
+    //
+    fillMode: 'object',
+
+
+  };
+
+  this.connected
 
   this.generate;
   this.regenerating;
@@ -79,46 +98,72 @@ Group.prototype.draw = function(ctx, origin) {
   //can be 'point' or 'child'
   var drawMode = 'child';
 
+  debugger;
+
   for (var i = 0; i < this.children.length; i++) {
 
     var kid = this.children[i];
+    var ownPos = this.screenPos();
     var kidPos = kid.screenPos(origin);
 
-    ctx.color = 'black';
-
-    if (!kid.children.length) {
+    if (! kid.children.length) {
 
       if (drawMode == 'child') {
 
         drawMode = 'point';
-        ctx.beginPath();
-        ctx.moveTo(kidPos[0], kidPos[1]);
+        this.startDrawing(ctx, ownPos, kidPos);
 
       } else {
 
         ctx.lineTo(kidPos[0], kidPos[1]);
-        if (i + 1 === this.children.length ) {
-          ctx.stroke();
-        }
 
+      }
+
+      if (i + 1 === this.children.length ) {
+        // ctx.stroke();
+        this.finishDrawing(ctx, origin);
       }
 
     } else {
 
       if (drawMode == 'point') {
         drawMode = 'child';
-        ctx.stroke;
-        ctx.stroke();
+        this.finishDrawing(ctx, origin);
+        // ctx.stroke();
       }
-      kid.draw(ctx);
+      kid.draw(ctx, origin);
 
     }
   }
 }
 
-Group.prototype.finishDrawing = function (ctx) {
+Group.prototype.startDrawing = function(ctx, ownPos, kidPos) {
+  ctx.beginPath();
+  ctx.lineWidth =   this.lines.width;
+  ctx.strokeStyle = this.lines.color;
 
+  if (this.lines.fromOrigin) {
+
+    ctx.moveTo(ownPos[0], ownPos[1]);
+    ctx.lineTo(kidPos[0], kidPos[1]);
+  } else {
+    ctx.moveTo(kidPos[0], kidPos[1]);
+  }
+
+}
+
+Group.prototype.finishDrawing = function(ctx, origin) {
+
+  debugger;
+
+  if (this.lines.connectEnds) {
+    firstPos = this.children[0].screenPos(origin);
+    ctx.lineTo(firstPos[0], firstPos[1]);
+  }
+
+  ctx.stroke();
 
 };
+
 
 module.exports = Group;

@@ -102,6 +102,7 @@
 	  this.ctx.clearRect(0,0,this.ctx.width, this.ctx.height);
 	  var origin = [this.xMin, this.yMin];
 	  this.game.draw(this.ctx, origin);
+	  debugger;
 
 	};
 
@@ -148,8 +149,13 @@
 
 	  var update = function() {
 
+	    var l = that.game.world.children.length-1
+	    that.game.world.children[l].childrenAngle -= 0.01;
 	    that.game.world.childrenAngle += 0.01;
-	    debugger;
+	    that.game.world.children[l].children[2].childrenAngle += 0.5;
+	    // that.game.world.childrenAngle += 0.3;
+	    // that.game.world.children[0].childrenAngle += 0.6;
+	    // debugger;
 	    that.draw();
 	    requestAnimationFrame(update);
 
@@ -662,20 +668,58 @@
 	  var p = new Group();
 	  var pp = new Group();
 	  var ppp = new Group();
+	  var pppp = new Group();
 
+	  // var pppp = new Group();
+	  //
 	  this.world.addChild(p);
+	  //
 	  this.world.addChild(pp);
 	  this.world.addChild(ppp);
+	  this.world.addChild(pppp);
+
+
+	  var rightArm = new Group();
+	  rightArm.dPos = [100,100];
+
+	  var r1 = new Group();
+	  var r2 = new Group();
+	  r1.dPos = [0,0];
+	  r2.dPos = [0,200];
+
+	  rightArm.addChild(r1);
+	  rightArm.addChild(r2);
+
+	  var rightForeArm = new Group();
+	  rightForeArm.dPos = [0,200];
+	  var rr1 = new Group();
+	  var rr2 = new Group();
+	  rr1.dPos = [0,0];
+	  rr2.dPos = [40,40];
+
+	  rightForeArm.addChild(rr1);
+	  rightForeArm.addChild(rr2);
+
+	  this.world.addChild(rightArm);
+
+	  rightArm.addChild(rightForeArm);
 
 	  p.dPos =   [100,0];
 	  pp.dPos =  [100,100];
 	  ppp.dPos = [0,100];
+	  pppp.dPos = [0,0];
+
+	  this.total = 0;
 
 	};
 
 	Game.prototype.draw = function (ctx, origin) {
 
 	  this.world.draw(ctx, origin);
+	  ctx.shadowColor = 'purple';
+	  this.total += 1;
+	  ctx.shadowBlur = 50*Math.abs(Math.sin(this.total/50));
+	  ctx.lineJoin = 'bevel';
 
 	};
 
@@ -793,8 +837,27 @@
 	  this.children = [];
 	  this.childrenAngle = 0;
 
-	  this.material = {};
-	  this.solid = {};
+	  this.lines = {
+	    fromOrigin: false,
+	    //ctx.strokeStyle
+	    color: 'black',
+	    //ctx.lineWidth
+	    width: '5',
+
+	    connectEnds: true,
+
+
+
+	  };
+	  this.fill = {
+	    filled: false,
+	    //
+	    fillMode: 'object',
+
+
+	  };
+
+	  this.connected
 
 	  this.generate;
 	  this.regenerating;
@@ -866,47 +929,73 @@
 	  //can be 'point' or 'child'
 	  var drawMode = 'child';
 
+	  debugger;
+
 	  for (var i = 0; i < this.children.length; i++) {
 
 	    var kid = this.children[i];
+	    var ownPos = this.screenPos();
 	    var kidPos = kid.screenPos(origin);
 
-	    ctx.color = 'black';
-
-	    if (!kid.children.length) {
+	    if (! kid.children.length) {
 
 	      if (drawMode == 'child') {
 
 	        drawMode = 'point';
-	        ctx.beginPath();
-	        ctx.moveTo(kidPos[0], kidPos[1]);
+	        this.startDrawing(ctx, ownPos, kidPos);
 
 	      } else {
 
 	        ctx.lineTo(kidPos[0], kidPos[1]);
-	        if (i + 1 === this.children.length ) {
-	          ctx.stroke();
-	        }
 
+	      }
+
+	      if (i + 1 === this.children.length ) {
+	        // ctx.stroke();
+	        this.finishDrawing(ctx, origin);
 	      }
 
 	    } else {
 
 	      if (drawMode == 'point') {
 	        drawMode = 'child';
-	        ctx.stroke;
-	        ctx.stroke();
+	        this.finishDrawing(ctx, origin);
+	        // ctx.stroke();
 	      }
-	      kid.draw(ctx);
+	      kid.draw(ctx, origin);
 
 	    }
 	  }
 	}
 
-	Group.prototype.finishDrawing = function (ctx) {
+	Group.prototype.startDrawing = function(ctx, ownPos, kidPos) {
+	  ctx.beginPath();
+	  ctx.lineWidth =   this.lines.width;
+	  ctx.strokeStyle = this.lines.color;
 
+	  if (this.lines.fromOrigin) {
+
+	    ctx.moveTo(ownPos[0], ownPos[1]);
+	    ctx.lineTo(kidPos[0], kidPos[1]);
+	  } else {
+	    ctx.moveTo(kidPos[0], kidPos[1]);
+	  }
+
+	}
+
+	Group.prototype.finishDrawing = function(ctx, origin) {
+
+	  debugger;
+
+	  if (this.lines.connectEnds) {
+	    firstPos = this.children[0].screenPos(origin);
+	    ctx.lineTo(firstPos[0], firstPos[1]);
+	  }
+
+	  ctx.stroke();
 
 	};
+
 
 	module.exports = Group;
 
