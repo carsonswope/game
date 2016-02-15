@@ -1,3 +1,5 @@
+
+
 function Util() {
 };
 
@@ -79,7 +81,6 @@ Util.prototype.distToSegmentStartDelta = function(pos, startPos, dPos) {
                       y: v.y + t * (w.y - v.y) });
   }
 
-  debugger;
 
   // function distToSegment(p, v, w) {
     return Math.sqrt(distToSegmentSquared(p, v, w));
@@ -96,4 +97,15 @@ Util.prototype.vMag = function(vector) {
     vector[0] * vector[0] + vector[1] * vector[1]
   );
 }
+
+
+Util.prototype.inherits = function (childClass, superClass) {
+
+  function Surrogate(){ }
+  Surrogate.prototype = superClass.prototype;
+
+  childClass.prototype = new Surrogate();
+  childClass.prototype.constructor = childClass;
+};
+
 module.exports = Util;

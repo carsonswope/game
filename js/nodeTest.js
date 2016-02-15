@@ -20,4 +20,6 @@ ppp.setOrigin(pp);
 pp.childrenAngle = Math.PI/2;
 p.childrenAngle = Math.PI/2;
 
+ppp.screenPos();
+
 debugger;

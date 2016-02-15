@@ -103,7 +103,6 @@
 	  this.ctx.clearRect(0,0,this.ctx.width, this.ctx.height);
 	  var origin = [this.xMin, this.yMin];
 	  this.game.draw(this.ctx, origin);
-	  debugger;
 
 	};
 
@@ -147,25 +146,33 @@
 	View.prototype.scroll = function () {
 
 	  var that = this;
+
+	  that.game.world.childrenAngle = Math.PI;
 	  var count = 0;
 
 	  var update = function() {
 
-	    var l = that.game.world.children.length-1
-	    that.game.world.children[l].childrenAngle -= 0.04;
-	    // that.game.world.childrenAngle += 0.2;
-	    that.game.world.children[l].children[2].childrenAngle += 0.5;
+	    // that.game.world.children[0].childrenAngle -= 0.04;
+	    that.game.world.childrenAngle += 0.02;
+	    that.game.rightArm.childrenAngle += 0.01;
 
 	    that.draw();
-	    count += 1;
 
-	    debugger;
+	    if (that.game.world.collides(that.game.rightArm) ||
+	        that.game.rightArm.collides(that.game.world)) {
 
-	    rate = 40*(Math.sin(count/100)+1);
 
-	    that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+	    } else {
 
-	    requestAnimationFrame(update);
+	      count += 1;
+
+	      rate = 40*(Math.sin(count/100)+1);
+
+	      that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+
+	      requestAnimationFrame(update);
+
+	    }
 
 	  }
 
@@ -174,10 +181,26 @@
 
 	module.exports = View;
 
+	//collision handling:
+	//different classes, of course, floor, etc,
+	//circle - airborne or on a surface
+	//bounce between circle and surface will have
+	//recommended outcome -
+	//a surface and circle will each have an elasticity (constant)
+	//also each will have a momentum (at point of impact)
+	//calculated from comparing the current position to old
+	//this comparison will also tell the collision calculation
+	//the direction in which the collision happened, thus
+	//where the bounce should go as well.
+	//ball vs ball, both are redirected
+	//ball vs surface, surface does not react, ball goes flying
+
 
 /***/ },
 /* 2 */
 /***/ function(module, exports) {
+
+	
 
 	function Util() {
 	};
@@ -260,7 +283,6 @@
 	                      y: v.y + t * (w.y - v.y) });
 	  }
 
-	  debugger;
 
 	  // function distToSegment(p, v, w) {
 	    return Math.sqrt(distToSegmentSquared(p, v, w));
@@ -277,6 +299,17 @@
 	    vector[0] * vector[0] + vector[1] * vector[1]
 	  );
 	}
+
+
+	Util.prototype.inherits = function (childClass, superClass) {
+
+	  function Surrogate(){ }
+	  Surrogate.prototype = superClass.prototype;
+
+	  childClass.prototype = new Surrogate();
+	  childClass.prototype.constructor = childClass;
+	};
+
 	module.exports = Util;
 
 
@@ -742,6 +775,8 @@
 	var MtnRange = __webpack_require__(7);
 	var Group = __webpack_require__(8);
 	var Wad = __webpack_require__(4);
+	var Point = __webpack_require__(9);
+	// var
 
 	function Game() {
 
@@ -755,12 +790,10 @@
 
 	  this.wad = new Wad();
 
-	  var p = new Group();
-	  var pp = new Group();
-	  var ppp = new Group();
-	  var pppp = new Group();
-
-	  // var pppp = new Group();
+	  var p = new Point();
+	  var pp = new Point();
+	  var ppp = new Point();
+	  var pppp = new Point();
 	  //
 	  this.world.addChild(p);
 	  //
@@ -768,36 +801,32 @@
 	  this.world.addChild(ppp);
 	  this.world.addChild(pppp);
 
-
-	  var rightArm = new Group();
-	  rightArm.dPos = [100,100];
-
-	  var r1 = new Group();
-	  var r2 = new Group();
-	  r1.dPos = [0,0];
-	  r2.dPos = [0,200];
-
-	  rightArm.addChild(r1);
-	  rightArm.addChild(r2);
-
-	  var rightForeArm = new Group();
-	  rightForeArm.dPos = [0,200];
-	  var rr1 = new Group();
-	  var rr2 = new Group();
-	  rr1.dPos = [0,0];
-	  rr2.dPos = [40,40];
-
-	  rightForeArm.addChild(rr1);
-	  rightForeArm.addChild(rr2);
-
-	  this.world.addChild(rightArm);
-
-	  rightArm.addChild(rightForeArm);
-
-	  p.dPos =   [100,0];
+	  p.dPos =   [30,0];
 	  pp.dPos =  [100,100];
-	  ppp.dPos = [0,100];
+	  ppp.dPos = [20,100];
 	  pppp.dPos = [0,0];
+
+
+	  this.rightArm = new Group();
+	  this.rightArm.dPos = [100,100];
+
+	  var r1 = new Point();
+	  var r2 = new Point();
+	  var r3 = new Point();
+	  var r4 = new Point();
+	  r1.dPos = [-40,-20];
+	  r2.dPos = [-40,100];
+	  r3.dPos = [100,200];
+	  r4.dPos = [100,-20];
+
+	  this.rightArm.addChild(r1);
+	  this.rightArm.addChild(r2);
+	  this.rightArm.addChild(r3);
+	  this.rightArm.addChild(r4);
+
+	  debugger;
+
+	  // this.world.addChild(rightArm);
 
 	  this.total = 0;
 
@@ -806,6 +835,7 @@
 	Game.prototype.draw = function (ctx, origin) {
 
 	  this.world.draw(ctx, origin);
+	  this.rightArm.draw(ctx, origin);
 	  ctx.lineJoin = 'bevel';
 
 	};
@@ -918,11 +948,14 @@
 
 	var Util = __webpack_require__(2).prototype;
 	// var Circle = require('./circle.js');
+	// var Point = require('./point.js');
 
-	function Group() {
+	function Group(options) {
 	  // parent can be position(global level) or another group
 	  this.dPos = [0,0];
 	  this.children = [];
+	  this.points = [];
+	  this.circles = [];
 	  this.childrenAngle = 0;
 
 	  this.lines = {
@@ -955,7 +988,17 @@
 	Group.prototype.setOrigin = function(newOrigin) {
 	  this.origin = newOrigin;
 	  if (newOrigin) {
-	    newOrigin.children.push(this);
+	    switch(this.__proto__.constructor.name) {
+	      case 'Point':
+	        newOrigin.points.push(this);
+	        break;
+	      case 'Group':
+	        newOrigin.children.push(this);
+	        break;
+	      case 'Circle':
+	        newOrigin.circles.push(this);
+	        break;
+	    };
 	  }
 	};
 
@@ -965,10 +1008,23 @@
 
 	Group.prototype.removeChild = function(child) {
 
-	  var i = this.children.indexOf(child);
-	  if (i > -1) { this.children.splice(i, 1); }
+	  switch(child.__proto__.constructor.name) {
+	    case 'Point':
+	      var i = this.points.indexOf(child);
+	      if(i > -1) { this.points.splice(i, 1); }
+	      break;
+	    case 'Group':
+	      var i = this.children.indexOf(child);
+	      if(i > -1) { this.children.splice(i, 1); }
+	      break;
+	    case 'Circle':
+	      var i = this.circles.indexOf(child);
+	      if(i > -1) { this.circles.splice(i, 1); }
+	      break;
+	  }
 
 	  child.setOrigin();
+
 	}
 
 	Group.prototype.screenPos = function (viewPos) {
@@ -1012,85 +1068,156 @@
 	  return Util.magnitudeAngle(magnitude, angle);
 	}
 
+	// Group.prototype.drawLines = function(ctx, origin) {
+	//
+	//   var ownPos = this.screenPos();
+	//
+	//   for (var i = 0; i < this.points.length; i++) {
+	//
+	//     var kid = this.points[i]
+	//     if (i == 0) {
+	//       kid.startDrawing(ctx, origin, final);
+	//     } else if (i == this.points.length -1) {
+	//       var final = this.lines.connectEnds ?
+	//         this.points[0].screenPos(origin) : undefined;
+	//       kid.finishDrawing(ctx, origin, final);
+	//     } else {
+	//       kid.draw(ctx, origin);
+	//     }
+	//
+	//   }
+	//
+	//
+	// }
+
 	Group.prototype.draw = function(ctx, origin) {
 
-	  //can be 'point' or 'child'
-	  var drawMode = 'child';
+	  //set up order specification?
+	  this.drawLines(ctx, origin);
+	  this.drawCircles(ctx, origin);
+	  this.drawChildren(ctx, origin);
 
-	  debugger;
 
-	  for (var i = 0; i < this.children.length; i++) {
-
-	    var kid = this.children[i];
-	    var ownPos = this.screenPos();
-	    var kidPos = kid.screenPos(origin);
-
-	    if (! kid.children.length) {
-
-	      if (drawMode == 'child') {
-
-	        drawMode = 'point';
-	        this.startDrawing(ctx, ownPos, kidPos);
-
-	      } else {
-
-	        ctx.lineTo(kidPos[0], kidPos[1]);
-
-	      }
-
-	      if (i + 1 === this.children.length ) {
-	        // ctx.stroke();
-	        this.finishDrawing(ctx, origin);
-	      }
-
-	    } else {
-
-	      if (drawMode == 'point') {
-	        drawMode = 'child';
-	        this.finishDrawing(ctx, origin);
-	        // ctx.stroke();
-	      }
-	      kid.draw(ctx, origin);
-
-	    }
-	  }
-	}
-
-	Group.prototype.collides = function(otherGroup) {
-
+	  this.pointCoordinates();
 
 	}
 
-	Group.prototype.startDrawing = function(ctx, ownPos, kidPos) {
+	Group.prototype.pointCoordinates = function(origin) {
+	  if (!origin) { origin = [0,0]; }
+	  var that = this;
+	  // debugger;
+	  return this.points.map(function(point) {
+	    return point.screenPos(origin);
+	  });
+	}
+
+	Group.prototype.drawCircles = function(ctx, origin) {
+
+	}
+
+	Group.prototype.drawLines = function(ctx, origin) {
+
+	  // debugger;
+
+	  var points = this.pointCoordinates(origin);
+
 	  ctx.beginPath();
-	  ctx.lineWidth =   this.lines.width;
+	  ctx.lineWidth = this.lines.width;
 	  ctx.strokeStyle = this.lines.color;
 
-	  if (this.lines.fromOrigin) {
-
-	    ctx.moveTo(ownPos[0], ownPos[1]);
-	    ctx.lineTo(kidPos[0], kidPos[1]);
-	  } else {
-	    ctx.moveTo(kidPos[0], kidPos[1]);
+	  for (var i = 0; i < points.length; i++) {
+	    var pos = points[i];
+	    if (i == 0) {
+	      ctx.moveTo(pos[0], pos[1]);
+	    } else {
+	      ctx.lineTo(pos[0], pos[1]);
+	    }
 	  }
-
-	}
-
-	Group.prototype.finishDrawing = function(ctx, origin) {
 
 	  debugger;
 
-	  if (this.lines.connectEnds) {
-	    firstPos = this.children[0].screenPos(origin);
-	    ctx.lineTo(firstPos[0], firstPos[1]);
+	  if (this.points.length && this.lines.connectEnds) {
+	    debugger;
+	    ctx.lineTo(points[0][0], points[0][1]);
 	  }
 
 	  ctx.stroke();
+	}
 
-	};
+	Group.prototype.drawChildren = function(ctx, origin) {
+	  this.children.forEach(function(child) {
+	    child.draw(ctx, origin);
+	  })
+	}
+
+	Group.prototype.collides = function(otherGroup) {
+	  var otherGroupPoints = otherGroup.pointCoordinates();
+	  var ownPoints = this.pointCoordinates();
+
+	  var final = this.lines.connectEnds ?
+	    ownPoints.length : ownPoints.length - 1;
+
+	  for (var i = 0; i < ownPoints.length; i++) {
+	    var lineStart = ownPoints[i];
+	    var lineEnd = ownPoints[(i + 1) % ownPoints.length];
+
+	    for (var j = 0; j < otherGroupPoints.length; j++) {
+	      distance = Util.distToSegmentStartEnd(
+	        otherGroupPoints[j],
+	        lineStart,
+	        lineEnd
+	      );
+	      if (distance < 5) { return true; }
+	    }
+
+	  }
+
+	  return false;
+
+
+	}
 
 
 	module.exports = Group;
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Group = __webpack_require__(8);
+	var Util = __webpack_require__(2);
+
+	function Point(options){
+
+	  Group.call(this, options);
+	}
+
+
+	Util.prototype.inherits(Point, Group);
+
+	Point.prototype.startDrawing = function(ctx, origin) {
+	  ctx.beginPath();
+	  ctx.lineWidth = this.lines.width;
+	  ctx.strokeStyle = this.lines.color;
+
+	  var screenPos = this.screenPos(origin);
+	  ctx.moveTo(screenPos[0], screenPos[1]);
+	}
+
+	Point.prototype.finishDrawing = function (ctx, origin, finalPos) {
+	  var screenPos = this.screenPos(origin);
+	  ctx.lineTo(screenPos[0], screenPos[1]);
+	  if (finalPos) { ctx.lineTo(finalPos[0], finalPos[1]); }
+	  ctx.stroke();
+	};
+
+	Point.prototype.draw = function(ctx, origin) {
+	  var screenPos = this.screenPos(origin);
+	  ctx.lineTo(screenPos[0], screenPos[1]);
+	}
+
+	module.exports = Point;
 
 
 /***/ }
