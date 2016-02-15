@@ -81,8 +81,8 @@ View.prototype.scroll = function () {
   var update = function() {
 
     var l = that.game.world.children.length-1
-    that.game.world.children[l].childrenAngle -= 0.01;
-    that.game.world.childrenAngle += 0.01;
+    that.game.world.children[l].childrenAngle -= 0.04;
+    // that.game.world.childrenAngle += 0.2;
     that.game.world.children[l].children[2].childrenAngle += 0.5;
 
     that.draw();

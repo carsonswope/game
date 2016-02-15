@@ -45,9 +45,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var View = __webpack_require__(1);
-	var Mtn = __webpack_require__(4);
-	var Game = __webpack_require__(5);
-	var MtnRange = __webpack_require__(6);
+	var Mtn = __webpack_require__(5);
+	var Game = __webpack_require__(6);
+	var MtnRange = __webpack_require__(7);
 
 	$(function() {
 
@@ -73,7 +73,7 @@
 
 	var Util = __webpack_require__(2);
 	var Key = __webpack_require__(3);
-	var Wad = __webpack_require__(8);
+	var Wad = __webpack_require__(4);
 
 	function View(canvas, game) {
 
@@ -152,8 +152,8 @@
 	  var update = function() {
 
 	    var l = that.game.world.children.length-1
-	    that.game.world.children[l].childrenAngle -= 0.01;
-	    that.game.world.childrenAngle += 0.01;
+	    that.game.world.children[l].childrenAngle -= 0.04;
+	    // that.game.world.childrenAngle += 0.2;
 	    that.game.world.children[l].children[2].childrenAngle += 0.5;
 
 	    that.draw();
@@ -211,6 +211,60 @@
 	    magnitude * Math.sin(angle),
 	    magnitude * Math.cos(angle)
 	  ];
+
+	}
+
+	Util.prototype.distToSegmentStartEnd = function(pos, startPos, endPos) {
+
+	  var v = {x: startPos[0], y: startPos[1]};
+	  var w = {x: endPos[0], y: endPos[1]};
+	  var p = {x: pos[0], y: pos[1]};
+
+	  function sqr(x) { return x * x };
+	  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+	  function distToSegmentSquared(p, v, w) {
+	    var l2 = dist2(v, w);
+	    if (l2 == 0) return dist2(p, v);
+	    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+	    if (t < 0) return dist2(p, v);
+	    if (t > 1) return dist2(p, w);
+	    return dist2(p, { x: v.x + t * (w.x - v.x),
+	                      y: v.y + t * (w.y - v.y) });
+	  }
+
+	  debugger;
+
+	  // function distToSegment(p, v, w) {
+	    return Math.sqrt(distToSegmentSquared(p, v, w));
+	  // }
+
+	}
+
+	Util.prototype.distToSegmentStartDelta = function(pos, startPos, dPos) {
+
+	  var endPos = Util.prototype.vSum(startPos, dPos);
+
+	  var v = {x: startPos[0], y: startPos[1]};
+	  var w = {x: endPos[0], y: endPos[1]};
+	  var p = {x: pos[0], y: pos[1]};
+
+	  function sqr(x) { return x * x };
+	  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+	  function distToSegmentSquared(p, v, w) {
+	    var l2 = dist2(v, w);
+	    if (l2 == 0) return dist2(p, v);
+	    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+	    if (t < 0) return dist2(p, v);
+	    if (t > 1) return dist2(p, w);
+	    return dist2(p, { x: v.x + t * (w.x - v.x),
+	                      y: v.y + t * (w.y - v.y) });
+	  }
+
+	  debugger;
+
+	  // function distToSegment(p, v, w) {
+	    return Math.sqrt(distToSegmentSquared(p, v, w));
+	  // }
 
 	}
 
@@ -534,6 +588,31 @@
 
 	var Util = __webpack_require__(2);
 
+	function Wad() {
+
+	  this.drawings = [];
+	  var drawing;
+
+
+	  for (var i = 2; i <= 9; i++) {
+	    drawing = new Image();
+	    drawing.src = './mw/' + i + '.png';
+	    this.drawings.push(drawing);
+	  }
+
+	};
+
+
+
+	module.exports = Wad;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+
 	function Mtn(pos, parent) {
 	  this.dPos = pos;
 	  this.parent;
@@ -655,14 +734,14 @@
 
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Mtn = __webpack_require__(4);
+	var Mtn = __webpack_require__(5);
 	var Util = __webpack_require__(2);
-	var MtnRange = __webpack_require__(6);
-	var Group = __webpack_require__(7);
-	var Wad = __webpack_require__(8);
+	var MtnRange = __webpack_require__(7);
+	var Group = __webpack_require__(8);
+	var Wad = __webpack_require__(4);
 
 	function Game() {
 
@@ -738,11 +817,11 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2);
-	var Mtn = __webpack_require__(4);
+	var Mtn = __webpack_require__(5);
 
 	function MtnRange(view, options) {
 
@@ -834,10 +913,11 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2).prototype;
+	// var Circle = require('./circle.js');
 
 	function Group() {
 	  // parent can be position(global level) or another group
@@ -976,6 +1056,11 @@
 	  }
 	}
 
+	Group.prototype.collides = function(otherGroup) {
+
+
+	}
+
 	Group.prototype.startDrawing = function(ctx, ownPos, kidPos) {
 	  ctx.beginPath();
 	  ctx.lineWidth =   this.lines.width;
@@ -1006,31 +1091,6 @@
 
 
 	module.exports = Group;
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Util = __webpack_require__(2);
-
-	function Wad() {
-
-	  this.drawings = [];
-	  var drawing;
-
-
-	  for (var i = 2; i <= 9; i++) {
-	    drawing = new Image();
-	    drawing.src = './mw/' + i + '.png';
-	    this.drawings.push(drawing);
-	  }
-
-	};
-
-
-
-	module.exports = Wad;
 
 
 /***/ }

@@ -33,6 +33,60 @@ Util.prototype.magnitudeAngle = function (magnitude, angle) {
 
 }
 
+Util.prototype.distToSegmentStartEnd = function(pos, startPos, endPos) {
+
+  var v = {x: startPos[0], y: startPos[1]};
+  var w = {x: endPos[0], y: endPos[1]};
+  var p = {x: pos[0], y: pos[1]};
+
+  function sqr(x) { return x * x };
+  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+  function distToSegmentSquared(p, v, w) {
+    var l2 = dist2(v, w);
+    if (l2 == 0) return dist2(p, v);
+    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    if (t < 0) return dist2(p, v);
+    if (t > 1) return dist2(p, w);
+    return dist2(p, { x: v.x + t * (w.x - v.x),
+                      y: v.y + t * (w.y - v.y) });
+  }
+
+  debugger;
+
+  // function distToSegment(p, v, w) {
+    return Math.sqrt(distToSegmentSquared(p, v, w));
+  // }
+
+}
+
+Util.prototype.distToSegmentStartDelta = function(pos, startPos, dPos) {
+
+  var endPos = Util.prototype.vSum(startPos, dPos);
+
+  var v = {x: startPos[0], y: startPos[1]};
+  var w = {x: endPos[0], y: endPos[1]};
+  var p = {x: pos[0], y: pos[1]};
+
+  function sqr(x) { return x * x };
+  function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+  function distToSegmentSquared(p, v, w) {
+    var l2 = dist2(v, w);
+    if (l2 == 0) return dist2(p, v);
+    var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    if (t < 0) return dist2(p, v);
+    if (t > 1) return dist2(p, w);
+    return dist2(p, { x: v.x + t * (w.x - v.x),
+                      y: v.y + t * (w.y - v.y) });
+  }
+
+  debugger;
+
+  // function distToSegment(p, v, w) {
+    return Math.sqrt(distToSegmentSquared(p, v, w));
+  // }
+
+}
+
 Util.prototype.aOfV = function(vector) {
   return Math.atan2(vector[0], vector[1]);
 }

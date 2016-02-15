@@ -1,4 +1,5 @@
 var Util = require('./util.js').prototype;
+// var Circle = require('./circle.js');
 
 function Group() {
   // parent can be position(global level) or another group
@@ -135,6 +136,11 @@ Group.prototype.draw = function(ctx, origin) {
 
     }
   }
+}
+
+Group.prototype.collides = function(otherGroup) {
+
+
 }
 
 Group.prototype.startDrawing = function(ctx, ownPos, kidPos) {
