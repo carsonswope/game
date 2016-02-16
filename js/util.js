@@ -53,8 +53,6 @@ Util.prototype.distToSegmentStartEnd = function(pos, startPos, endPos) {
                       y: v.y + t * (w.y - v.y) });
   }
 
-  debugger;
-
   // function distToSegment(p, v, w) {
     return Math.sqrt(distToSegmentSquared(p, v, w));
   // }
@@ -96,6 +94,14 @@ Util.prototype.vMag = function(vector) {
   return Math.sqrt(
     vector[0] * vector[0] + vector[1] * vector[1]
   );
+}
+
+Util.prototype.vTimesMag = function(vector, magnitude) {
+  var angle = Util.prototype.aOfV(vector);
+  var oldMagnitude = Util.prototype.vMag(vector)
+  var newMagnitude = oldMagnitude * magnitude;
+  return Util.prototype.magnitudeAngle(newMagnitude, angle);
+  debugger;
 }
 
 

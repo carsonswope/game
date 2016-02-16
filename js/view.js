@@ -75,33 +75,43 @@ View.prototype.handleKeyup = function (e) {
 View.prototype.scroll = function () {
 
   var that = this;
+  var time = 0;
+  var dTime = 0;
 
   that.game.world.childrenAngle = Math.PI;
-  var count = 0;
+  that.game.world.velocity = [-0.01, -0.01];
+  that.game.world.childrenSpin = 0.0005;
+  // debugger;
+  that.game.world.acceleration = [0.000004, -0.000005];
+// var count = 0;
 
-  var update = function() {
+  var update = function(t) {
 
-    // that.game.world.children[0].childrenAngle -= 0.04;
-    that.game.world.childrenAngle += 0.02;
-    that.game.rightArm.childrenAngle += 0.01;
+    dTime = t-time;
+    time = t;
+    //
+    // that.draw();
 
-    that.draw();
+    // if (that.game.world.collides(that.game.rightArm) ||
+    //     that.game.rightArm.collides(that.game.world)) {
+    //
+    //
+    // } else {
 
-    if (that.game.world.collides(that.game.rightArm) ||
-        that.game.rightArm.collides(that.game.world)) {
+      console.log(dTime);
 
+      that.game.tick(dTime);
+      //
+      // count += 1;
+      // rate = 40*(Math.sin(count/100)+1);
 
-    } else {
-
-      count += 1;
-
-      rate = 40*(Math.sin(count/100)+1);
-
-      that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+      origin = [that.xMin, that.yMin];
+      that.draw(that.ctx, origin);
+      that.ctx.drawImage(that.game.wad.drawings[5], 1000,300, 180, 160);
 
       requestAnimationFrame(update);
 
-    }
+    // }
 
   }
 

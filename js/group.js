@@ -4,11 +4,18 @@ var Util = require('./util.js').prototype;
 
 function Group(options) {
   // parent can be position(global level) or another group
-  this.dPos = [0,0];
+
+
   this.children = [];
   this.points = [];
   this.circles = [];
+
+  this.dPos = [0,0];
+  this.velocity = [0,0];
+  this.acceleration = [0,0];
+
   this.childrenAngle = 0;
+  this.childrenSpin = 0;
 
   this.lines = {
     fromOrigin: false,
@@ -18,23 +25,23 @@ function Group(options) {
     width: '5',
 
     connectEnds: true,
-
-
-
   };
+
   this.fill = {
     filled: false,
     //
     fillMode: 'object',
-
-
   };
 
-  this.connected
+}
 
-  this.generate;
-  this.regenerating;
+Group.prototype.resetPositionCache = function() {
+  this.worldPos = undefined;
+  this.worldAngle = undefined;
 
+  (this.points.concat(this.circles).concat(this.children)).forEach(function(kid) {
+    kid.resetPositionCache();
+  });
 }
 
 Group.prototype.setOrigin = function(newOrigin) {
@@ -104,10 +111,37 @@ Group.prototype.angleOfDPos = function () {
 }
 
 Group.prototype.screenAngle = function () {
+
   if (!this.origin) {
     return 0;
   } else {
     return this.origin.childrenAngle + this.origin.screenAngle();
+  }
+
+}
+
+Group.prototype.move = function(dT) {
+
+
+
+  var dVelocity = Util.vTimesMag(this.acceleration, dT);
+  // debugger;
+  debugger;
+  this.velocity = Util.vSum(this.velocity, dVelocity);
+  // newVelocity[0] += 1;
+
+  this.oldDPos = this.dPos;
+  this.oldChildrenAngle = this.childrenAngle;
+
+  if (this.childrenSpin) {
+    this.childrenAngle += (this.childrenSpin * dT);
+    // this.resetPositionCache();
+  }
+
+  if (this.velocity) {
+    var dDPos = Util.vTimesMag(this.velocity, dT);
+    this.dPos = Util.vSum(this.dPos, dDPos);
+    // this.resetPositionCache();
   }
 
 }
@@ -120,31 +154,10 @@ Group.prototype.anglePos = function() {
   return Util.magnitudeAngle(magnitude, angle);
 }
 
-// Group.prototype.drawLines = function(ctx, origin) {
-//
-//   var ownPos = this.screenPos();
-//
-//   for (var i = 0; i < this.points.length; i++) {
-//
-//     var kid = this.points[i]
-//     if (i == 0) {
-//       kid.startDrawing(ctx, origin, final);
-//     } else if (i == this.points.length -1) {
-//       var final = this.lines.connectEnds ?
-//         this.points[0].screenPos(origin) : undefined;
-//       kid.finishDrawing(ctx, origin, final);
-//     } else {
-//       kid.draw(ctx, origin);
-//     }
-//
-//   }
-//
-//
-// }
-
 Group.prototype.draw = function(ctx, origin) {
 
   //set up order specification?
+  debugger;
   this.drawLines(ctx, origin);
   this.drawCircles(ctx, origin);
   this.drawChildren(ctx, origin);
@@ -186,10 +199,7 @@ Group.prototype.drawLines = function(ctx, origin) {
     }
   }
 
-  debugger;
-
   if (this.points.length && this.lines.connectEnds) {
-    debugger;
     ctx.lineTo(points[0][0], points[0][1]);
   }
 

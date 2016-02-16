@@ -60,6 +60,17 @@ Game.prototype.startWorld = function(options) {
 
 };
 
+Game.prototype.tick = function(dT) {
+
+  //check for collisions   ??
+  //check for other events ??
+  // actually just listeners for this?
+
+  this.rightArm.move(dT);
+  this.world.move(dT);
+
+};
+
 Game.prototype.draw = function (ctx, origin) {
 
   this.world.draw(ctx, origin);

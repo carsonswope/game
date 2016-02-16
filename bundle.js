@@ -146,33 +146,43 @@
 	View.prototype.scroll = function () {
 
 	  var that = this;
+	  var time = 0;
+	  var dTime = 0;
 
 	  that.game.world.childrenAngle = Math.PI;
-	  var count = 0;
+	  that.game.world.velocity = [-0.01, -0.01];
+	  that.game.world.childrenSpin = 0.0005;
+	  // debugger;
+	  that.game.world.acceleration = [0.000004, -0.000005];
+	// var count = 0;
 
-	  var update = function() {
+	  var update = function(t) {
 
-	    // that.game.world.children[0].childrenAngle -= 0.04;
-	    that.game.world.childrenAngle += 0.02;
-	    that.game.rightArm.childrenAngle += 0.01;
+	    dTime = t-time;
+	    time = t;
+	    //
+	    // that.draw();
 
-	    that.draw();
+	    // if (that.game.world.collides(that.game.rightArm) ||
+	    //     that.game.rightArm.collides(that.game.world)) {
+	    //
+	    //
+	    // } else {
 
-	    if (that.game.world.collides(that.game.rightArm) ||
-	        that.game.rightArm.collides(that.game.world)) {
+	      console.log(dTime);
 
+	      that.game.tick(dTime);
+	      //
+	      // count += 1;
+	      // rate = 40*(Math.sin(count/100)+1);
 
-	    } else {
-
-	      count += 1;
-
-	      rate = 40*(Math.sin(count/100)+1);
-
-	      that.ctx.drawImage(that.game.wad.drawings[Math.floor(rate) % 5], 1000,300, 180, 160);
+	      origin = [that.xMin, that.yMin];
+	      that.draw(that.ctx, origin);
+	      that.ctx.drawImage(that.game.wad.drawings[5], 1000,300, 180, 160);
 
 	      requestAnimationFrame(update);
 
-	    }
+	    // }
 
 	  }
 
@@ -255,8 +265,6 @@
 	                      y: v.y + t * (w.y - v.y) });
 	  }
 
-	  debugger;
-
 	  // function distToSegment(p, v, w) {
 	    return Math.sqrt(distToSegmentSquared(p, v, w));
 	  // }
@@ -298,6 +306,14 @@
 	  return Math.sqrt(
 	    vector[0] * vector[0] + vector[1] * vector[1]
 	  );
+	}
+
+	Util.prototype.vTimesMag = function(vector, magnitude) {
+	  var angle = Util.prototype.aOfV(vector);
+	  var oldMagnitude = Util.prototype.vMag(vector)
+	  var newMagnitude = oldMagnitude * magnitude;
+	  return Util.prototype.magnitudeAngle(newMagnitude, angle);
+	  debugger;
 	}
 
 
@@ -832,6 +848,17 @@
 
 	};
 
+	Game.prototype.tick = function(dT) {
+
+	  //check for collisions   ??
+	  //check for other events ??
+	  // actually just listeners for this?
+
+	  this.rightArm.move(dT);
+	  this.world.move(dT);
+
+	};
+
 	Game.prototype.draw = function (ctx, origin) {
 
 	  this.world.draw(ctx, origin);
@@ -952,11 +979,18 @@
 
 	function Group(options) {
 	  // parent can be position(global level) or another group
-	  this.dPos = [0,0];
+
+
 	  this.children = [];
 	  this.points = [];
 	  this.circles = [];
+
+	  this.dPos = [0,0];
+	  this.velocity = [0,0];
+	  this.acceleration = [0,0];
+
 	  this.childrenAngle = 0;
+	  this.childrenSpin = 0;
 
 	  this.lines = {
 	    fromOrigin: false,
@@ -966,23 +1000,23 @@
 	    width: '5',
 
 	    connectEnds: true,
-
-
-
 	  };
+
 	  this.fill = {
 	    filled: false,
 	    //
 	    fillMode: 'object',
-
-
 	  };
 
-	  this.connected
+	}
 
-	  this.generate;
-	  this.regenerating;
+	Group.prototype.resetPositionCache = function() {
+	  this.worldPos = undefined;
+	  this.worldAngle = undefined;
 
+	  (this.points.concat(this.circles).concat(this.children)).forEach(function(kid) {
+	    kid.resetPositionCache();
+	  });
 	}
 
 	Group.prototype.setOrigin = function(newOrigin) {
@@ -1052,10 +1086,37 @@
 	}
 
 	Group.prototype.screenAngle = function () {
+
 	  if (!this.origin) {
 	    return 0;
 	  } else {
 	    return this.origin.childrenAngle + this.origin.screenAngle();
+	  }
+
+	}
+
+	Group.prototype.move = function(dT) {
+
+
+
+	  var dVelocity = Util.vTimesMag(this.acceleration, dT);
+	  // debugger;
+	  debugger;
+	  this.velocity = Util.vSum(this.velocity, dVelocity);
+	  // newVelocity[0] += 1;
+
+	  this.oldDPos = this.dPos;
+	  this.oldChildrenAngle = this.childrenAngle;
+
+	  if (this.childrenSpin) {
+	    this.childrenAngle += (this.childrenSpin * dT);
+	    // this.resetPositionCache();
+	  }
+
+	  if (this.velocity) {
+	    var dDPos = Util.vTimesMag(this.velocity, dT);
+	    this.dPos = Util.vSum(this.dPos, dDPos);
+	    // this.resetPositionCache();
 	  }
 
 	}
@@ -1068,31 +1129,10 @@
 	  return Util.magnitudeAngle(magnitude, angle);
 	}
 
-	// Group.prototype.drawLines = function(ctx, origin) {
-	//
-	//   var ownPos = this.screenPos();
-	//
-	//   for (var i = 0; i < this.points.length; i++) {
-	//
-	//     var kid = this.points[i]
-	//     if (i == 0) {
-	//       kid.startDrawing(ctx, origin, final);
-	//     } else if (i == this.points.length -1) {
-	//       var final = this.lines.connectEnds ?
-	//         this.points[0].screenPos(origin) : undefined;
-	//       kid.finishDrawing(ctx, origin, final);
-	//     } else {
-	//       kid.draw(ctx, origin);
-	//     }
-	//
-	//   }
-	//
-	//
-	// }
-
 	Group.prototype.draw = function(ctx, origin) {
 
 	  //set up order specification?
+	  debugger;
 	  this.drawLines(ctx, origin);
 	  this.drawCircles(ctx, origin);
 	  this.drawChildren(ctx, origin);
@@ -1134,10 +1174,7 @@
 	    }
 	  }
 
-	  debugger;
-
 	  if (this.points.length && this.lines.connectEnds) {
-	    debugger;
 	    ctx.lineTo(points[0][0], points[0][1]);
 	  }
 
