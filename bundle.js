@@ -115,7 +115,6 @@
 
 	};
 
-
 	View.prototype.KEYMAP = {
 	  'Up'   : [ 0,-1],
 	  'Right': [ 1, 0],
@@ -149,12 +148,17 @@
 	  var time = 0;
 	  var dTime = 0;
 
-	  that.game.world.childrenAngle = Math.PI;
-	  that.game.world.velocity = [-0.01, -0.01];
-	  that.game.world.childrenSpin = 0.0005;
-	  // debugger;
-	  that.game.world.acceleration = [0.000004, -0.000005];
-	// var count = 0;
+	  // that.game.world.childrenAngle = Math.PI;
+	  // that.game.world.velocity = [-0.1, -0.1];
+	  // that.game.rightArm.velocity = [0.0, -0.1];
+	  // that.game.world.childrenSpin = 0.005;
+	  // that.game.world.acceleration = [-0.00005, 0.0000];
+
+	  that.game.rightArm.velocity = [-0.1,-0.1];
+	  // that.game.rightArm.childrenSpin = 0.25;
+	  // that.game.rightArm.velocity = [0.1, 0.1];
+	  // that.game.rightArm.velocity = [-0.669, -0.66];
+	  // that.game.rightArm.velocity = [-0.1, -0.1];
 
 	  var update = function(t) {
 
@@ -170,6 +174,8 @@
 	    // } else {
 
 	      console.log(dTime);
+
+	      debugger;
 
 	      that.game.tick(dTime);
 	      //
@@ -313,7 +319,6 @@
 	  var oldMagnitude = Util.prototype.vMag(vector)
 	  var newMagnitude = oldMagnitude * magnitude;
 	  return Util.prototype.magnitudeAngle(newMagnitude, angle);
-	  debugger;
 	}
 
 
@@ -796,7 +801,7 @@
 
 	function Game() {
 
-	  this.world = new Group();;
+	  // this.world = new Group();
 	}
 
 	Game.prototype.startWorld = function(options) {
@@ -806,21 +811,21 @@
 
 	  this.wad = new Wad();
 
-	  var p = new Point();
-	  var pp = new Point();
-	  var ppp = new Point();
-	  var pppp = new Point();
+	  // var p = new Point();
+	  // var pp = new Point();
+	  // var ppp = new Point();
+	  // var pppp = new Point();
+	  // //
+	  // this.world.addChild(p);
+	  // //
+	  // this.world.addChild(pp);
+	  // this.world.addChild(ppp);
+	  // this.world.addChild(pppp);
 	  //
-	  this.world.addChild(p);
-	  //
-	  this.world.addChild(pp);
-	  this.world.addChild(ppp);
-	  this.world.addChild(pppp);
-
-	  p.dPos =   [30,0];
-	  pp.dPos =  [100,100];
-	  ppp.dPos = [20,100];
-	  pppp.dPos = [0,0];
+	  // p.dPos =   [30,0];
+	  // pp.dPos =  [100,100];
+	  // ppp.dPos = [20,100];
+	  // pppp.dPos = [0,0];
 
 
 	  this.rightArm = new Group();
@@ -840,11 +845,7 @@
 	  this.rightArm.addChild(r3);
 	  this.rightArm.addChild(r4);
 
-	  debugger;
-
-	  // this.world.addChild(rightArm);
-
-	  this.total = 0;
+	  // this.world.addChild(this.rightArm);
 
 	};
 
@@ -854,14 +855,16 @@
 	  //check for other events ??
 	  // actually just listeners for this?
 
+	  console.log(this.rightArm.dPos);
+
 	  this.rightArm.move(dT);
-	  this.world.move(dT);
+	  // this.world.move(dT);
 
 	};
 
 	Game.prototype.draw = function (ctx, origin) {
 
-	  this.world.draw(ctx, origin);
+	  // this.world.draw(ctx, origin);
 	  this.rightArm.draw(ctx, origin);
 	  ctx.lineJoin = 'bevel';
 
@@ -985,8 +988,8 @@
 	  this.points = [];
 	  this.circles = [];
 
-	  this.dPos = [0,0];
-	  this.velocity = [0,0];
+	  this.dPos =         [0,0];
+	  this.velocity =     [0,0];
 	  this.acceleration = [0,0];
 
 	  this.childrenAngle = 0;
@@ -1013,8 +1016,9 @@
 	Group.prototype.resetPositionCache = function() {
 	  this.worldPos = undefined;
 	  this.worldAngle = undefined;
+	  this.dPosAngle = undefined;
 
-	  (this.points.concat(this.circles).concat(this.children)).forEach(function(kid) {
+	  this.allChildren().forEach(function(kid) {
 	    kid.resetPositionCache();
 	  });
 	}
@@ -1064,59 +1068,77 @@
 	Group.prototype.screenPos = function (viewPos) {
 
 	  if (!viewPos) { viewPos = [0,0]; }
-	  if (!this.origin) {
 
-	    return Util.vDiff(
-	      viewPos,
-	      this.anglePos()
-	    );
-	  } else {
-	    return Util.vSum(
-	      this.origin.screenPos(viewPos),
-	      this.anglePos()
-	    );
+	  if (!this.worldPos) {
+
+	    if (!this.origin) {
+
+	      this.worldPos = this.anglePos()
+
+	    } else {
+
+	      this.worldPos = Util.vSum(
+	        this.origin.screenPos(),
+	        this.anglePos()
+	      );
+	    }
+
 	  }
+
+	  return Util.vDiff(viewPos, this.worldPos);
+
 	}
 
 	Group.prototype.angleOfDPos = function () {
-	  if (!this.originalAngle) {
-	    this.originalAngle = Util.aOfV(this.dPos);
+	  if (!this.dPosAngle) {
+	    this.dPosAngle = Util.aOfV(this.dPos);
 	  }
-	  return this.originalAngle;
+	  return this.dPosAngle;
 	}
 
 	Group.prototype.screenAngle = function () {
 
-	  if (!this.origin) {
-	    return 0;
-	  } else {
-	    return this.origin.childrenAngle + this.origin.screenAngle();
+	  if (!this.worldAngle) {
+	    if (!this.origin) {
+	      this.worldAngle = 0;
+	    } else {
+	      this.worldAngle = this.origin.childrenAngle + this.origin.screenAngle();
+	    }
 	  }
 
+	  return this.worldAngle;
+
+
+	}
+
+	Group.prototype.allChildren = function(){
+
+	  return this.children.concat(this.points).concat(this.circles);
 	}
 
 	Group.prototype.move = function(dT) {
 
-
-
 	  var dVelocity = Util.vTimesMag(this.acceleration, dT);
 	  // debugger;
-	  debugger;
 	  this.velocity = Util.vSum(this.velocity, dVelocity);
-	  // newVelocity[0] += 1;
 
-	  this.oldDPos = this.dPos;
-	  this.oldChildrenAngle = this.childrenAngle;
+	  // this.oldDPos = this.dPos;
+	  // this.oldChildrenAngle = this.childrenAngle;
 
 	  if (this.childrenSpin) {
 	    this.childrenAngle += (this.childrenSpin * dT);
-	    // this.resetPositionCache();
+	    this.resetPositionCache();
 	  }
 
 	  if (this.velocity) {
 	    var dDPos = Util.vTimesMag(this.velocity, dT);
 	    this.dPos = Util.vSum(this.dPos, dDPos);
-	    // this.resetPositionCache();
+	    this.resetPositionCache();
+	  }
+
+	  var kids = this.allChildren()
+	  for (var i = 0; i < kids.length; i++) {
+	    kids[i].move(dT);
 	  }
 
 	}
@@ -1126,13 +1148,13 @@
 	  var angle = this.angleOfDPos() + this.screenAngle();
 	  var magnitude = Util.vMag(this.dPos);
 
+
 	  return Util.magnitudeAngle(magnitude, angle);
 	}
 
 	Group.prototype.draw = function(ctx, origin) {
 
 	  //set up order specification?
-	  debugger;
 	  this.drawLines(ctx, origin);
 	  this.drawCircles(ctx, origin);
 	  this.drawChildren(ctx, origin);

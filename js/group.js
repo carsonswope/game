@@ -10,8 +10,8 @@ function Group(options) {
   this.points = [];
   this.circles = [];
 
-  this.dPos = [0,0];
-  this.velocity = [0,0];
+  this.dPos =         [0,0];
+  this.velocity =     [0,0];
   this.acceleration = [0,0];
 
   this.childrenAngle = 0;
@@ -38,8 +38,9 @@ function Group(options) {
 Group.prototype.resetPositionCache = function() {
   this.worldPos = undefined;
   this.worldAngle = undefined;
+  this.dPosAngle = undefined;
 
-  (this.points.concat(this.circles).concat(this.children)).forEach(function(kid) {
+  this.allChildren().forEach(function(kid) {
     kid.resetPositionCache();
   });
 }
@@ -89,59 +90,77 @@ Group.prototype.removeChild = function(child) {
 Group.prototype.screenPos = function (viewPos) {
 
   if (!viewPos) { viewPos = [0,0]; }
-  if (!this.origin) {
 
-    return Util.vDiff(
-      viewPos,
-      this.anglePos()
-    );
-  } else {
-    return Util.vSum(
-      this.origin.screenPos(viewPos),
-      this.anglePos()
-    );
+  if (!this.worldPos) {
+
+    if (!this.origin) {
+
+      this.worldPos = this.anglePos()
+
+    } else {
+
+      this.worldPos = Util.vSum(
+        this.origin.screenPos(),
+        this.anglePos()
+      );
+    }
+
   }
+
+  return Util.vDiff(viewPos, this.worldPos);
+
 }
 
 Group.prototype.angleOfDPos = function () {
-  if (!this.originalAngle) {
-    this.originalAngle = Util.aOfV(this.dPos);
+  if (!this.dPosAngle) {
+    this.dPosAngle = Util.aOfV(this.dPos);
   }
-  return this.originalAngle;
+  return this.dPosAngle;
 }
 
 Group.prototype.screenAngle = function () {
 
-  if (!this.origin) {
-    return 0;
-  } else {
-    return this.origin.childrenAngle + this.origin.screenAngle();
+  if (!this.worldAngle) {
+    if (!this.origin) {
+      this.worldAngle = 0;
+    } else {
+      this.worldAngle = this.origin.childrenAngle + this.origin.screenAngle();
+    }
   }
 
+  return this.worldAngle;
+
+
+}
+
+Group.prototype.allChildren = function(){
+
+  return this.children.concat(this.points).concat(this.circles);
 }
 
 Group.prototype.move = function(dT) {
 
-
-
   var dVelocity = Util.vTimesMag(this.acceleration, dT);
   // debugger;
-  debugger;
   this.velocity = Util.vSum(this.velocity, dVelocity);
-  // newVelocity[0] += 1;
 
-  this.oldDPos = this.dPos;
-  this.oldChildrenAngle = this.childrenAngle;
+  // this.oldDPos = this.dPos;
+  // this.oldChildrenAngle = this.childrenAngle;
 
   if (this.childrenSpin) {
     this.childrenAngle += (this.childrenSpin * dT);
-    // this.resetPositionCache();
+    this.resetPositionCache();
   }
 
   if (this.velocity) {
     var dDPos = Util.vTimesMag(this.velocity, dT);
     this.dPos = Util.vSum(this.dPos, dDPos);
-    // this.resetPositionCache();
+    this.resetPositionCache();
+  }
+
+  var kids = this.allChildren()
+  for (var i = 0; i < kids.length; i++) {
+    kids[i].move(dT);
   }
 
 }
@@ -151,13 +170,13 @@ Group.prototype.anglePos = function() {
   var angle = this.angleOfDPos() + this.screenAngle();
   var magnitude = Util.vMag(this.dPos);
 
+
   return Util.magnitudeAngle(magnitude, angle);
 }
 
 Group.prototype.draw = function(ctx, origin) {
 
   //set up order specification?
-  debugger;
   this.drawLines(ctx, origin);
   this.drawCircles(ctx, origin);
   this.drawChildren(ctx, origin);

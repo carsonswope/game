@@ -8,7 +8,7 @@ var Point = require('./point.js');
 
 function Game() {
 
-  this.world = new Group();;
+  // this.world = new Group();
 }
 
 Game.prototype.startWorld = function(options) {
@@ -18,21 +18,21 @@ Game.prototype.startWorld = function(options) {
 
   this.wad = new Wad();
 
-  var p = new Point();
-  var pp = new Point();
-  var ppp = new Point();
-  var pppp = new Point();
+  // var p = new Point();
+  // var pp = new Point();
+  // var ppp = new Point();
+  // var pppp = new Point();
+  // //
+  // this.world.addChild(p);
+  // //
+  // this.world.addChild(pp);
+  // this.world.addChild(ppp);
+  // this.world.addChild(pppp);
   //
-  this.world.addChild(p);
-  //
-  this.world.addChild(pp);
-  this.world.addChild(ppp);
-  this.world.addChild(pppp);
-
-  p.dPos =   [30,0];
-  pp.dPos =  [100,100];
-  ppp.dPos = [20,100];
-  pppp.dPos = [0,0];
+  // p.dPos =   [30,0];
+  // pp.dPos =  [100,100];
+  // ppp.dPos = [20,100];
+  // pppp.dPos = [0,0];
 
 
   this.rightArm = new Group();
@@ -52,11 +52,7 @@ Game.prototype.startWorld = function(options) {
   this.rightArm.addChild(r3);
   this.rightArm.addChild(r4);
 
-  debugger;
-
-  // this.world.addChild(rightArm);
-
-  this.total = 0;
+  // this.world.addChild(this.rightArm);
 
 };
 
@@ -66,14 +62,16 @@ Game.prototype.tick = function(dT) {
   //check for other events ??
   // actually just listeners for this?
 
+  console.log(this.rightArm.dPos);
+
   this.rightArm.move(dT);
-  this.world.move(dT);
+  // this.world.move(dT);
 
 };
 
 Game.prototype.draw = function (ctx, origin) {
 
-  this.world.draw(ctx, origin);
+  // this.world.draw(ctx, origin);
   this.rightArm.draw(ctx, origin);
   ctx.lineJoin = 'bevel';
 

@@ -44,7 +44,6 @@ View.prototype.bindKeys = function(){
 
 };
 
-
 View.prototype.KEYMAP = {
   'Up'   : [ 0,-1],
   'Right': [ 1, 0],
@@ -78,12 +77,17 @@ View.prototype.scroll = function () {
   var time = 0;
   var dTime = 0;
 
-  that.game.world.childrenAngle = Math.PI;
-  that.game.world.velocity = [-0.01, -0.01];
-  that.game.world.childrenSpin = 0.0005;
-  // debugger;
-  that.game.world.acceleration = [0.000004, -0.000005];
-// var count = 0;
+  // that.game.world.childrenAngle = Math.PI;
+  // that.game.world.velocity = [-0.1, -0.1];
+  // that.game.rightArm.velocity = [0.0, -0.1];
+  // that.game.world.childrenSpin = 0.005;
+  // that.game.world.acceleration = [-0.00005, 0.0000];
+
+  that.game.rightArm.velocity = [-0.1,-0.1];
+  // that.game.rightArm.childrenSpin = 0.25;
+  // that.game.rightArm.velocity = [0.1, 0.1];
+  // that.game.rightArm.velocity = [-0.669, -0.66];
+  // that.game.rightArm.velocity = [-0.1, -0.1];
 
   var update = function(t) {
 
@@ -99,6 +103,8 @@ View.prototype.scroll = function () {
     // } else {
 
       console.log(dTime);
+
+      debugger;
 
       that.game.tick(dTime);
       //

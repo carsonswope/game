@@ -101,7 +101,6 @@ Util.prototype.vTimesMag = function(vector, magnitude) {
   var oldMagnitude = Util.prototype.vMag(vector)
   var newMagnitude = oldMagnitude * magnitude;
   return Util.prototype.magnitudeAngle(newMagnitude, angle);
-  debugger;
 }
 
 
