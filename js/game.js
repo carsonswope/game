@@ -4,39 +4,37 @@ var MtnRange = require('./mtnRange.js');
 var Group = require('./group.js');
 var Wad = require('./wad.js');
 var Point = require('./point.js');
+var Circle = require('./circle.js');
 // var
 
 function Game() {
-
-  // this.world = new Group();
+  this.items = [];
 }
 
 Game.prototype.startWorld = function(options) {
 
+  wad = new Wad();
+  wad.dPos = [-500,0];
 
-  // debugger;
+  world = new Group();
 
-  this.wad = new Wad();
+  var p =  new Point();
+  var pp = new Point();
 
-  // var p = new Point();
-  // var pp = new Point();
-  // var ppp = new Point();
-  // var pppp = new Point();
-  // //
-  // this.world.addChild(p);
-  // //
-  // this.world.addChild(pp);
-  // this.world.addChild(ppp);
-  // this.world.addChild(pppp);
-  //
-  // p.dPos =   [30,0];
-  // pp.dPos =  [100,100];
-  // ppp.dPos = [20,100];
-  // pppp.dPos = [0,0];
+  p.dPos = [-400,150];
+  pp.dPos = [400,150];
+
+  world.addChild(p);
+  world.addChild(pp);
+
+  c = new Circle();
+  c.radius = 74;
+  c.velocity = [0.0, -0.8];
+  this.items.push(c);
 
 
-  this.rightArm = new Group();
-  this.rightArm.dPos = [100,100];
+  rightArm = new Group();
+  rightArm.dPos = [-100,-100];
 
   var r1 = new Point();
   var r2 = new Point();
@@ -47,14 +45,19 @@ Game.prototype.startWorld = function(options) {
   r3.dPos = [100,200];
   r4.dPos = [100,-20];
 
-  this.rightArm.addChild(r1);
-  this.rightArm.addChild(r2);
-  this.rightArm.addChild(r3);
-  this.rightArm.addChild(r4);
+  rightArm.addChild(r1);
+  rightArm.addChild(r2);
+  rightArm.addChild(r3);
+  rightArm.addChild(r4);
 
-  // this.world.addChild(this.rightArm);
+  // this.items.push(rightArm);
+  this.items.push(world);
+  // this.items.push(wad);
 
 };
+
+Game.prototype.GRAVITY = [0, 0.00098];
+Game.prototype.NEGATIVE_GRAVITY = [0, -0.00098];
 
 Game.prototype.tick = function(dT) {
 
@@ -62,17 +65,47 @@ Game.prototype.tick = function(dT) {
   //check for other events ??
   // actually just listeners for this?
 
-  console.log(this.rightArm.dPos);
+  var collisions = [];
 
-  this.rightArm.move(dT);
-  // this.world.move(dT);
+  for (var i = 0; i < this.items.length; i++) {
+    for (var j = i + 1; j < this.items.length; j++) {
+
+      if (this.items[i].collides(this.items[j])) {
+        collisions.push([this.items[i], this.items[j]]);
+      }
+
+    }
+  }
+
+  for (var i = 0; i < collisions.length; i++) {
+    //
+
+    collisions[i].velocity = Util.prototype.vSum(
+      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
+      collisions[i].velocity
+    );
+
+
+
+    collisions[i][0].velocity = [
+      0, -collisions[i][0].velocity[1] * 0.8
+    ];
+
+
+  }
+
+  for (var i = 0; i < this.items.length; i++) {
+    this.items[i].move(dT);
+  }
 
 };
 
 Game.prototype.draw = function (ctx, origin) {
 
-  // this.world.draw(ctx, origin);
-  this.rightArm.draw(ctx, origin);
+  for (var i = 0; i < this.items.length; i++) {
+    this.items[i].draw(ctx, origin);
+  }
+
   ctx.lineJoin = 'bevel';
 
 };

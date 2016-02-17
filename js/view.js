@@ -77,51 +77,22 @@ View.prototype.scroll = function () {
   var time = 0;
   var dTime = 0;
 
-  // that.game.world.childrenAngle = Math.PI;
-  // that.game.world.velocity = [-0.1, -0.1];
-  // that.game.rightArm.velocity = [0.0, -0.1];
-  // that.game.world.childrenSpin = 0.005;
-  // that.game.world.acceleration = [-0.00005, 0.0000];
-
-  that.game.rightArm.velocity = [-0.1,-0.1];
-  // that.game.rightArm.childrenSpin = 0.25;
-  // that.game.rightArm.velocity = [0.1, 0.1];
-  // that.game.rightArm.velocity = [-0.669, -0.66];
-  // that.game.rightArm.velocity = [-0.1, -0.1];
-
   var update = function(t) {
 
     dTime = t-time;
     time = t;
-    //
-    // that.draw();
 
-    // if (that.game.world.collides(that.game.rightArm) ||
-    //     that.game.rightArm.collides(that.game.world)) {
-    //
-    //
-    // } else {
+    that.game.tick(dTime);
 
-      console.log(dTime);
+    origin = [that.xMin, that.yMin];
+    that.draw(that.ctx, origin);
 
-      debugger;
-
-      that.game.tick(dTime);
-      //
-      // count += 1;
-      // rate = 40*(Math.sin(count/100)+1);
-
-      origin = [that.xMin, that.yMin];
-      that.draw(that.ctx, origin);
-      that.ctx.drawImage(that.game.wad.drawings[5], 1000,300, 180, 160);
-
-      requestAnimationFrame(update);
-
-    // }
+    requestAnimationFrame(update);
 
   }
 
   requestAnimationFrame(update);
+
 };
 
 module.exports = View;

@@ -148,51 +148,22 @@
 	  var time = 0;
 	  var dTime = 0;
 
-	  // that.game.world.childrenAngle = Math.PI;
-	  // that.game.world.velocity = [-0.1, -0.1];
-	  // that.game.rightArm.velocity = [0.0, -0.1];
-	  // that.game.world.childrenSpin = 0.005;
-	  // that.game.world.acceleration = [-0.00005, 0.0000];
-
-	  that.game.rightArm.velocity = [-0.1,-0.1];
-	  // that.game.rightArm.childrenSpin = 0.25;
-	  // that.game.rightArm.velocity = [0.1, 0.1];
-	  // that.game.rightArm.velocity = [-0.669, -0.66];
-	  // that.game.rightArm.velocity = [-0.1, -0.1];
-
 	  var update = function(t) {
 
 	    dTime = t-time;
 	    time = t;
-	    //
-	    // that.draw();
 
-	    // if (that.game.world.collides(that.game.rightArm) ||
-	    //     that.game.rightArm.collides(that.game.world)) {
-	    //
-	    //
-	    // } else {
+	    that.game.tick(dTime);
 
-	      console.log(dTime);
+	    origin = [that.xMin, that.yMin];
+	    that.draw(that.ctx, origin);
 
-	      debugger;
-
-	      that.game.tick(dTime);
-	      //
-	      // count += 1;
-	      // rate = 40*(Math.sin(count/100)+1);
-
-	      origin = [that.xMin, that.yMin];
-	      that.draw(that.ctx, origin);
-	      that.ctx.drawImage(that.game.wad.drawings[5], 1000,300, 180, 160);
-
-	      requestAnimationFrame(update);
-
-	    // }
+	    requestAnimationFrame(update);
 
 	  }
 
 	  requestAnimationFrame(update);
+
 	};
 
 	module.exports = View;
@@ -232,6 +203,14 @@
 	  return Math.random() * (max-min) + min;
 
 	};
+
+	Util.prototype.dist = function(v1, v2) {
+	  var a = v1[0] - v2[0];
+	  var b = v1[1] - v2[1];
+	  return Math.sqrt(
+	    a * a + b * b
+	  );
+	}
 
 
 	Util.prototype.vSum = function(end, start) {
@@ -641,20 +620,42 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2);
+	var Circle = __webpack_require__(10);
 
-	function Wad() {
+	function Wad(options) {
 
 	  this.drawings = [];
 	  var drawing;
 
+	  this.count = 0;
 
-	  for (var i = 2; i <= 9; i++) {
+	  for (var i = 2; i <= 8; i++) {
 	    drawing = new Image();
 	    drawing.src = './mw/' + i + '.png';
 	    this.drawings.push(drawing);
 	  }
 
+	  Circle.call(this, options);
+
 	};
+
+	Util.prototype.inherits(Wad, Circle);
+
+	Wad.prototype.move = function(dT) {
+
+	  this.count += 1;
+	  this.drawingNumber = Math.floor(((this.count / 6) % (this.drawings.length -1)))
+
+	}
+
+	Wad.prototype.draw = function(ctx, origin){
+
+	  var x = this.dPos[0];
+	  var y = this.dPos[0];
+
+	  ctx.drawImage(this.drawings[this.drawingNumber], 1000,500,180,160);
+
+	}
 
 
 
@@ -797,39 +798,37 @@
 	var Group = __webpack_require__(8);
 	var Wad = __webpack_require__(4);
 	var Point = __webpack_require__(9);
+	var Circle = __webpack_require__(10);
 	// var
 
 	function Game() {
-
-	  // this.world = new Group();
+	  this.items = [];
 	}
 
 	Game.prototype.startWorld = function(options) {
 
+	  wad = new Wad();
+	  wad.dPos = [-500,0];
 
-	  // debugger;
+	  world = new Group();
 
-	  this.wad = new Wad();
+	  var p =  new Point();
+	  var pp = new Point();
 
-	  // var p = new Point();
-	  // var pp = new Point();
-	  // var ppp = new Point();
-	  // var pppp = new Point();
-	  // //
-	  // this.world.addChild(p);
-	  // //
-	  // this.world.addChild(pp);
-	  // this.world.addChild(ppp);
-	  // this.world.addChild(pppp);
-	  //
-	  // p.dPos =   [30,0];
-	  // pp.dPos =  [100,100];
-	  // ppp.dPos = [20,100];
-	  // pppp.dPos = [0,0];
+	  p.dPos = [-400,150];
+	  pp.dPos = [400,150];
+
+	  world.addChild(p);
+	  world.addChild(pp);
+
+	  c = new Circle();
+	  c.radius = 74;
+	  c.velocity = [0.0, -0.8];
+	  this.items.push(c);
 
 
-	  this.rightArm = new Group();
-	  this.rightArm.dPos = [100,100];
+	  rightArm = new Group();
+	  rightArm.dPos = [-100,-100];
 
 	  var r1 = new Point();
 	  var r2 = new Point();
@@ -840,14 +839,19 @@
 	  r3.dPos = [100,200];
 	  r4.dPos = [100,-20];
 
-	  this.rightArm.addChild(r1);
-	  this.rightArm.addChild(r2);
-	  this.rightArm.addChild(r3);
-	  this.rightArm.addChild(r4);
+	  rightArm.addChild(r1);
+	  rightArm.addChild(r2);
+	  rightArm.addChild(r3);
+	  rightArm.addChild(r4);
 
-	  // this.world.addChild(this.rightArm);
+	  // this.items.push(rightArm);
+	  this.items.push(world);
+	  // this.items.push(wad);
 
 	};
+
+	Game.prototype.GRAVITY = [0, 0.00098];
+	Game.prototype.NEGATIVE_GRAVITY = [0, -0.00098];
 
 	Game.prototype.tick = function(dT) {
 
@@ -855,17 +859,47 @@
 	  //check for other events ??
 	  // actually just listeners for this?
 
-	  console.log(this.rightArm.dPos);
+	  var collisions = [];
 
-	  this.rightArm.move(dT);
-	  // this.world.move(dT);
+	  for (var i = 0; i < this.items.length; i++) {
+	    for (var j = i + 1; j < this.items.length; j++) {
+
+	      if (this.items[i].collides(this.items[j])) {
+	        collisions.push([this.items[i], this.items[j]]);
+	      }
+
+	    }
+	  }
+
+	  for (var i = 0; i < collisions.length; i++) {
+	    //
+
+	    collisions[i].velocity = Util.prototype.vSum(
+	      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
+	      collisions[i].velocity
+	    );
+
+
+
+	    collisions[i][0].velocity = [
+	      0, -collisions[i][0].velocity[1] * 0.8
+	    ];
+
+
+	  }
+
+	  for (var i = 0; i < this.items.length; i++) {
+	    this.items[i].move(dT);
+	  }
 
 	};
 
 	Game.prototype.draw = function (ctx, origin) {
 
-	  // this.world.draw(ctx, origin);
-	  this.rightArm.draw(ctx, origin);
+	  for (var i = 0; i < this.items.length; i++) {
+	    this.items[i].draw(ctx, origin);
+	  }
+
 	  ctx.lineJoin = 'bevel';
 
 	};
@@ -987,6 +1021,10 @@
 	  this.children = [];
 	  this.points = [];
 	  this.circles = [];
+
+	  this.state = {
+	    inAir: false
+	  }
 
 	  this.dPos =         [0,0];
 	  this.velocity =     [0,0];
@@ -1111,6 +1149,8 @@
 
 	}
 
+	Group.prototype.GRAVITY = [0, 0.00098];
+
 	Group.prototype.allChildren = function(){
 
 	  return this.children.concat(this.points).concat(this.circles);
@@ -1118,12 +1158,24 @@
 
 	Group.prototype.move = function(dT) {
 
-	  var dVelocity = Util.vTimesMag(this.acceleration, dT);
-	  // debugger;
+	  var dVelocity = [0, 0];
+
+	  if (this.state.inAir && !this.origin) {
+
+	    dVelocity = Util.vTimesMag(Group.prototype.GRAVITY, dT);
+
+	  }
+
+
+	  dVelocity = Util.vSum(
+	    dVelocity,
+	    Util.vTimesMag(this.acceleration, dT)
+	  );
+
 	  this.velocity = Util.vSum(this.velocity, dVelocity);
 
-	  // this.oldDPos = this.dPos;
-	  // this.oldChildrenAngle = this.childrenAngle;
+	  this.oldDPos = this.dPos;
+	  this.oldChildrenAngle = this.childrenAngle;
 
 	  if (this.childrenSpin) {
 	    this.childrenAngle += (this.childrenSpin * dT);
@@ -1210,23 +1262,91 @@
 	}
 
 	Group.prototype.collides = function(otherGroup) {
-	  var otherGroupPoints = otherGroup.pointCoordinates();
-	  var ownPoints = this.pointCoordinates();
 
-	  var final = this.lines.connectEnds ?
-	    ownPoints.length : ownPoints.length - 1;
+	  // debugger;
 
-	  for (var i = 0; i < ownPoints.length; i++) {
-	    var lineStart = ownPoints[i];
-	    var lineEnd = ownPoints[(i + 1) % ownPoints.length];
+	  var grpOneType = this.__proto__.constructor.name;
+	  var grpTwoType = otherGroup.constructor.name;
 
-	    for (var j = 0; j < otherGroupPoints.length; j++) {
-	      distance = Util.distToSegmentStartEnd(
-	        otherGroupPoints[j],
-	        lineStart,
-	        lineEnd
+	  var ownPoints;
+	  var otherGroupPoints;
+	  var collisionDistance = 0;
+
+	  if (grpOneType === "Circle") {
+
+	    ownPoints = [this.screenPos()];
+	    collisionDistance += this.radius + 2.5;
+
+	  } else {
+
+	    ownPoints = this.pointCoordinates();
+	    collisionDistance += 2.5;
+
+	  }
+
+	  if (grpTwoType === "Circle") {
+
+	    otherGroupPoints = [otherGroup.screenPos()];
+	    collisionDistance += otherGroup.radius + 2.5;
+
+	  } else {
+
+	    otherGroupPoints = otherGroup.pointCoordinates();
+	    collisionDistance += 2.5;
+
+	  }
+
+	  // debugger;
+
+	  if (grpOneType === 'Circle') {
+	    //we are circle with one point
+	    if (grpTwoType == 'Circle') {
+
+	      var distance = Util.dist(
+	        ownPoints[0],
+	        otherGroupPoints[0]
 	      );
-	      if (distance < 5) { return true; }
+
+	      if (distance < collisionDistance ) { return true;}
+
+	    } else {
+
+	      for (var i = 0; i < otherGroupPoints.length; i++) {
+
+	        var lineStart = otherGroupPoints[i];
+	        var lineEnd = otherGroupPoints[(i+1) % otherGroupPoints.length];
+
+	        var distance = Util.distToSegmentStartEnd(
+	          ownPoints[0],
+	          lineStart,
+	          lineEnd
+	        );
+
+	        if (distance < collisionDistance ){return true;}
+
+	      }
+
+
+	    }
+
+	  } else {
+
+	    for (var i = 0; i < ownPoints.length; i++) {
+
+	      var lineStart = ownPoints[i];
+	      var lineEnd = ownPoints[(i + 1) % ownPoints.length];
+
+	      for (var j = 0; j < otherGroupPoints.length; j++) {
+
+	        var distance = Util.distToSegmentStartEnd(
+	          otherGroupPoints[j],
+	          lineStart,
+	          lineEnd
+	        );
+
+	        if (distance < collisionDistance) { return true; }
+
+	      }
 	    }
 
 	  }
@@ -1277,6 +1397,40 @@
 	}
 
 	module.exports = Point;
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Group = __webpack_require__(8);
+	var Util = __webpack_require__(2).prototype;
+
+	function Circle(options){
+
+	  this.radius = 0;
+	  this.dPos = [0,0];
+
+	  Group.call(this, options);
+
+	  this.state.inAir = true;
+
+	}
+
+	Util.inherits(Circle, Group);
+
+	Circle.prototype.draw = function(ctx, origin) {
+
+	  var pos = this.screenPos(origin)
+
+	  ctx.beginPath();
+
+	  ctx.arc(pos[0], pos[1], this.radius, 0, Math.PI * 2);
+	  ctx.stroke();
+
+	}
+
+	module.exports = Circle;
 
 
 /***/ }

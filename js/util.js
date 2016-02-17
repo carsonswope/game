@@ -15,6 +15,14 @@ Util.prototype.random = function(min, max) {
 
 };
 
+Util.prototype.dist = function(v1, v2) {
+  var a = v1[0] - v2[0];
+  var b = v1[1] - v2[1];
+  return Math.sqrt(
+    a * a + b * b
+  );
+}
+
 
 Util.prototype.vSum = function(end, start) {
   if (start == undefined) { start = [0,0]; }

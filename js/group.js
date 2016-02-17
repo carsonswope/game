@@ -10,6 +10,10 @@ function Group(options) {
   this.points = [];
   this.circles = [];
 
+  this.state = {
+    inAir: false
+  }
+
   this.dPos =         [0,0];
   this.velocity =     [0,0];
   this.acceleration = [0,0];
@@ -133,6 +137,8 @@ Group.prototype.screenAngle = function () {
 
 }
 
+Group.prototype.GRAVITY = [0, 0.00098];
+
 Group.prototype.allChildren = function(){
 
   return this.children.concat(this.points).concat(this.circles);
@@ -140,12 +146,24 @@ Group.prototype.allChildren = function(){
 
 Group.prototype.move = function(dT) {
 
-  var dVelocity = Util.vTimesMag(this.acceleration, dT);
-  // debugger;
+  var dVelocity = [0, 0];
+
+  if (this.state.inAir && !this.origin) {
+
+    dVelocity = Util.vTimesMag(Group.prototype.GRAVITY, dT);
+
+  }
+
+
+  dVelocity = Util.vSum(
+    dVelocity,
+    Util.vTimesMag(this.acceleration, dT)
+  );
+
   this.velocity = Util.vSum(this.velocity, dVelocity);
 
-  // this.oldDPos = this.dPos;
-  // this.oldChildrenAngle = this.childrenAngle;
+  this.oldDPos = this.dPos;
+  this.oldChildrenAngle = this.childrenAngle;
 
   if (this.childrenSpin) {
     this.childrenAngle += (this.childrenSpin * dT);
@@ -232,23 +250,91 @@ Group.prototype.drawChildren = function(ctx, origin) {
 }
 
 Group.prototype.collides = function(otherGroup) {
-  var otherGroupPoints = otherGroup.pointCoordinates();
-  var ownPoints = this.pointCoordinates();
 
-  var final = this.lines.connectEnds ?
-    ownPoints.length : ownPoints.length - 1;
+  // debugger;
 
-  for (var i = 0; i < ownPoints.length; i++) {
-    var lineStart = ownPoints[i];
-    var lineEnd = ownPoints[(i + 1) % ownPoints.length];
+  var grpOneType = this.__proto__.constructor.name;
+  var grpTwoType = otherGroup.constructor.name;
 
-    for (var j = 0; j < otherGroupPoints.length; j++) {
-      distance = Util.distToSegmentStartEnd(
-        otherGroupPoints[j],
-        lineStart,
-        lineEnd
+  var ownPoints;
+  var otherGroupPoints;
+  var collisionDistance = 0;
+
+  if (grpOneType === "Circle") {
+
+    ownPoints = [this.screenPos()];
+    collisionDistance += this.radius + 2.5;
+
+  } else {
+
+    ownPoints = this.pointCoordinates();
+    collisionDistance += 2.5;
+
+  }
+
+  if (grpTwoType === "Circle") {
+
+    otherGroupPoints = [otherGroup.screenPos()];
+    collisionDistance += otherGroup.radius + 2.5;
+
+  } else {
+
+    otherGroupPoints = otherGroup.pointCoordinates();
+    collisionDistance += 2.5;
+
+  }
+
+  // debugger;
+
+  if (grpOneType === 'Circle') {
+    //we are circle with one point
+    if (grpTwoType == 'Circle') {
+
+      var distance = Util.dist(
+        ownPoints[0],
+        otherGroupPoints[0]
       );
-      if (distance < 5) { return true; }
+
+      if (distance < collisionDistance ) { return true;}
+
+    } else {
+
+      for (var i = 0; i < otherGroupPoints.length; i++) {
+
+        var lineStart = otherGroupPoints[i];
+        var lineEnd = otherGroupPoints[(i+1) % otherGroupPoints.length];
+
+        var distance = Util.distToSegmentStartEnd(
+          ownPoints[0],
+          lineStart,
+          lineEnd
+        );
+
+        if (distance < collisionDistance ){return true;}
+
+      }
+
+
+    }
+
+  } else {
+
+    for (var i = 0; i < ownPoints.length; i++) {
+
+      var lineStart = ownPoints[i];
+      var lineEnd = ownPoints[(i + 1) % ownPoints.length];
+
+      for (var j = 0; j < otherGroupPoints.length; j++) {
+
+        var distance = Util.distToSegmentStartEnd(
+          otherGroupPoints[j],
+          lineStart,
+          lineEnd
+        );
+
+        if (distance < collisionDistance) { return true; }
+
+      }
     }
 
   }
