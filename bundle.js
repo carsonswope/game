@@ -45,9 +45,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var View = __webpack_require__(1);
-	var Mtn = __webpack_require__(5);
-	var Game = __webpack_require__(6);
-	var MtnRange = __webpack_require__(7);
+	var Mtn = __webpack_require__(7);
+	var Game = __webpack_require__(8);
+	var MtnRange = __webpack_require__(9);
 
 	$(function() {
 
@@ -620,7 +620,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2);
-	var Circle = __webpack_require__(10);
+	var Circle = __webpack_require__(5);
 
 	function Wad(options) {
 
@@ -666,348 +666,38 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Util = __webpack_require__(2);
+	var Group = __webpack_require__(6);
+	var Util = __webpack_require__(2).prototype;
 
-	function Mtn(pos, parent) {
-	  this.dPos = pos;
-	  this.parent;
-	  this.child;
-	  this.parentPos;
+	function Circle(options){
 
-	  // this.setParent(parent, options);
-	};
+	  this.radius = 0;
+	  this.dPos = [0,0];
 
-	Mtn.prototype.setParent = function (parent, options) {
-	  if (parent == undefined) {
-	    this.parent = undefined;
-	    this.parentPos = [0,0];
-	    // this.pos = this.dPos;
-	  } else {
-	    this.parent = parent;
-	    this.parentPos = parent.pos;
-	    // this.pos = Util.prototype.vSum(this.parentPos, this.dPos);
-	    this.parent.child = this;
-	  }
+	  Group.call(this, options);
 
-	  if (options) {
-	    if (options['startPos']) { this.parentPos = options['startPos']; }
-	  }
+	  this.state.inAir = true;
 
-	  this.pos = Util.prototype.vSum(this.parentPos, this.dPos);
 	}
 
-	Mtn.prototype.peaksAtX = function(x) {
+	Util.inherits(Circle, Group);
 
-	  if (this.pos[0] > x) {
-	    return [this];
-	  } else {
+	Circle.prototype.draw = function(ctx, origin) {
 
-	    var response = this.child.peaksAtX(x);
+	  var pos = this.screenPos(origin)
 
-	    if (response && response.length === 1) {
+	  ctx.beginPath();
 
-	      response.push(this);
-	      return response;
-	    } else {
-	      return response;
-	    }
+	  ctx.arc(pos[0], pos[1], this.radius, 0, Math.PI * 2);
+	  ctx.stroke();
 
-	  }
 	}
 
-	Mtn.prototype.yAtX = function(x) {
-	  var peaks = this.peaksAtX(x);
-
-
-	  debugger;
-	  var dX = x - peaks[1].pos[0];
-
-	  //to get slope of
-	  var dXtotal = peaks[0].pos[0] - peaks[1].pos[0];
-
-	  /// rise / run
-	  var slope = (peaks[0].pos[1] - peaks[1].pos[1]) / dXtotal;
-
-	  return peaks[1].pos[1] + slope * dX;
-	}
-
-	Mtn.prototype.genRange = function (parent, options) {
-	  // options is big hash with options
-	  // important ones: width, direction, height
-	  //
-	  // higher level of abstraction - a variety of elements generated
-	  // according to chaining together pre-made types of formations
-	  //
-	  //
-
-	  var mtns = [];
-
-	  for (var i = 0; i < 550; i++) {
-	    var newPos = Mtn.prototype.genRandomPos(options);
-	    var newMtn = new Mtn(newPos);
-	    if (i > 0) { newMtn.setParent(oldMtn); }
-	    else { newMtn.setParent(parent, options); }
-	    mtns.push(newMtn);
-	    var oldMtn = newMtn;
-	  }
-
-	  return mtns;
-	};
-
-	Mtn.prototype.FORMATIONS = {
-
-	};
-
-	Mtn.prototype.genRandomPos = function (prms) {
-	  if (prms === undefined ) { prms = {}; }
-	  if (prms['dXrng'] === undefined ) {
-	      prms['dXrng'] = [ 15,40]; }
-	  if (prms['dYrng'] === undefined ) {
-	      prms['dYrng'] = [-20,20]; }
-
-	  var dX = Util.prototype.random(prms['dXrng']);
-	  var dY = Util.prototype.random(prms['dYrng']);
-
-	  return [dX, dY];
-	};
-
-	Mtn.prototype.draw = function(ctx, origin) {
-
-	  var startPos =  Util.prototype.vDiff(origin, this.parentPos);
-	  var endPos =    Util.prototype.vDiff(origin, this.pos);
-
-	  // ctx.beginPath();
-	  // ctx.moveTo(startPos[0], startPos[1]);
-	  ctx.lineTo(endPos[0], endPos[1]);
-	  // ctx.stroke();
-
-	};
-
-	// Mtn.prototype.
-
-	module.exports = Mtn;
+	module.exports = Circle;
 
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Mtn = __webpack_require__(5);
-	var Util = __webpack_require__(2);
-	var MtnRange = __webpack_require__(7);
-	var Group = __webpack_require__(8);
-	var Wad = __webpack_require__(4);
-	var Point = __webpack_require__(9);
-	var Circle = __webpack_require__(10);
-	// var
-
-	function Game() {
-	  this.items = [];
-	}
-
-	Game.prototype.startWorld = function(options) {
-
-	  wad = new Wad();
-	  wad.dPos = [-500,0];
-
-	  world = new Group();
-
-	  var p =  new Point();
-	  var pp = new Point();
-
-	  p.dPos = [-400,150];
-	  pp.dPos = [400,150];
-
-	  world.addChild(p);
-	  world.addChild(pp);
-
-	  c = new Circle();
-	  c.radius = 74;
-	  c.velocity = [0.0, -0.8];
-	  this.items.push(c);
-
-
-	  rightArm = new Group();
-	  rightArm.dPos = [-100,-100];
-
-	  var r1 = new Point();
-	  var r2 = new Point();
-	  var r3 = new Point();
-	  var r4 = new Point();
-	  r1.dPos = [-40,-20];
-	  r2.dPos = [-40,100];
-	  r3.dPos = [100,200];
-	  r4.dPos = [100,-20];
-
-	  rightArm.addChild(r1);
-	  rightArm.addChild(r2);
-	  rightArm.addChild(r3);
-	  rightArm.addChild(r4);
-
-	  // this.items.push(rightArm);
-	  this.items.push(world);
-	  // this.items.push(wad);
-
-	};
-
-	Game.prototype.GRAVITY = [0, 0.00098];
-	Game.prototype.NEGATIVE_GRAVITY = [0, -0.00098];
-
-	Game.prototype.tick = function(dT) {
-
-	  //check for collisions   ??
-	  //check for other events ??
-	  // actually just listeners for this?
-
-	  var collisions = [];
-
-	  for (var i = 0; i < this.items.length; i++) {
-	    for (var j = i + 1; j < this.items.length; j++) {
-
-	      if (this.items[i].collides(this.items[j])) {
-	        collisions.push([this.items[i], this.items[j]]);
-	      }
-
-	    }
-	  }
-
-	  for (var i = 0; i < collisions.length; i++) {
-	    //
-
-	    collisions[i].velocity = Util.prototype.vSum(
-	      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
-	      collisions[i].velocity
-	    );
-
-
-
-	    collisions[i][0].velocity = [
-	      0, -collisions[i][0].velocity[1] * 0.8
-	    ];
-
-
-	  }
-
-	  for (var i = 0; i < this.items.length; i++) {
-	    this.items[i].move(dT);
-	  }
-
-	};
-
-	Game.prototype.draw = function (ctx, origin) {
-
-	  for (var i = 0; i < this.items.length; i++) {
-	    this.items[i].draw(ctx, origin);
-	  }
-
-	  ctx.lineJoin = 'bevel';
-
-	};
-
-	module.exports = Game;
-
-
-	//mtn ranges to draw
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Util = __webpack_require__(2);
-	var Mtn = __webpack_require__(5);
-
-	function MtnRange(view, options) {
-
-	  this.origin = [0,0];
-	  this.nodes = [];
-	  this.view = view
-
-	  this.fill = 'black';
-	  this.fillStatus = 'line-only';
-	  this.lineColor = 'green';
-	  this.lineSize = 5;
-
-	  this.regenerating = {
-	    minPct: 0.5,
-	    maxPct: 1
-	  };
-
-	  if (this.regenerating) {
-	    this.startRng();
-	  }
-
-	};
-
-	MtnRange.prototype.startRng = function() {
-
-	  debugger;
-
-	  var minX = this.view.xMin;
-	  var minY = this.view.yMin;
-	  var maxX = this.view.xRng + minX;
-	  var maxY = this.view.yRng + minY;
-	  var originPos = this.origin;
-	  var parent;
-
-	  var x = minX - (this.view.xRng * this.regenerating.minPct);
-	  var mostRecent = newMtn();
-	  var mostRecentPos = this.origin;
-
-	  while (x < maxX + this.view.xRng * this.regenerating.minPct) {
-
-
-
-	    debugger;
-	    finalPos = Util.prototype.vSum(
-	      Mtn.prototype.genRandomPos(),
-	      mostRecentPos
-	    );
-
-	    if (mostRecentPos === this.origin) { parent = undefined }
-	    toAdd = newMtn(finalPos, originPos);
-
-	    this.nodes.push(mostRecent);
-
-	  }
-
-	}
-
-	MtnRange.prototype.regen = function() {
-
-
-	  var minY = this.view.minX;
-	  var mixY = this.view.minY;
-	  var maxX = this.view.xRng - minX;
-	  var maxY = this.view.yRng - minX;
-
-	}
-
-	MtnRange.prototype.draw = function (ctx) {
-
-	  ctx.beginPath();
-
-	  for (var i = 0; i < this.nodes.length; i++) {
-	    this.nodes[i].tracePath(ctx);
-	  }
-
-	  if (ctx.fill) {
-	    ctx.fillStyle = this.fill;
-	    this.setupFill(ctx);
-	    ctx.fill();
-	  }
-
-
-	  ctx.stroke();
-
-
-	};
-
-	module.exports = MtnRange;
-
-
-/***/ },
-/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Util = __webpack_require__(2).prototype;
@@ -1024,7 +714,7 @@
 
 	  this.state = {
 	    inAir: false
-	  }
+	  };
 
 	  this.dPos =         [0,0];
 	  this.velocity =     [0,0];
@@ -1361,10 +1051,353 @@
 
 
 /***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Util = __webpack_require__(2);
+
+	function Mtn(pos, parent) {
+	  this.dPos = pos;
+	  this.parent;
+	  this.child;
+	  this.parentPos;
+
+	  // this.setParent(parent, options);
+	};
+
+	Mtn.prototype.setParent = function (parent, options) {
+	  if (parent == undefined) {
+	    this.parent = undefined;
+	    this.parentPos = [0,0];
+	    // this.pos = this.dPos;
+	  } else {
+	    this.parent = parent;
+	    this.parentPos = parent.pos;
+	    // this.pos = Util.prototype.vSum(this.parentPos, this.dPos);
+	    this.parent.child = this;
+	  }
+
+	  if (options) {
+	    if (options['startPos']) { this.parentPos = options['startPos']; }
+	  }
+
+	  this.pos = Util.prototype.vSum(this.parentPos, this.dPos);
+	}
+
+	Mtn.prototype.peaksAtX = function(x) {
+
+	  if (this.pos[0] > x) {
+	    return [this];
+	  } else {
+
+	    var response = this.child.peaksAtX(x);
+
+	    if (response && response.length === 1) {
+
+	      response.push(this);
+	      return response;
+	    } else {
+	      return response;
+	    }
+
+	  }
+	}
+
+	Mtn.prototype.yAtX = function(x) {
+	  var peaks = this.peaksAtX(x);
+
+
+	  debugger;
+	  var dX = x - peaks[1].pos[0];
+
+	  //to get slope of
+	  var dXtotal = peaks[0].pos[0] - peaks[1].pos[0];
+
+	  /// rise / run
+	  var slope = (peaks[0].pos[1] - peaks[1].pos[1]) / dXtotal;
+
+	  return peaks[1].pos[1] + slope * dX;
+	}
+
+	Mtn.prototype.genRange = function (parent, options) {
+	  // options is big hash with options
+	  // important ones: width, direction, height
+	  //
+	  // higher level of abstraction - a variety of elements generated
+	  // according to chaining together pre-made types of formations
+	  //
+	  //
+
+	  var mtns = [];
+
+	  for (var i = 0; i < 550; i++) {
+	    var newPos = Mtn.prototype.genRandomPos(options);
+	    var newMtn = new Mtn(newPos);
+	    if (i > 0) { newMtn.setParent(oldMtn); }
+	    else { newMtn.setParent(parent, options); }
+	    mtns.push(newMtn);
+	    var oldMtn = newMtn;
+	  }
+
+	  return mtns;
+	};
+
+	Mtn.prototype.FORMATIONS = {
+
+	};
+
+	Mtn.prototype.genRandomPos = function (prms) {
+	  if (prms === undefined ) { prms = {}; }
+	  if (prms['dXrng'] === undefined ) {
+	      prms['dXrng'] = [ 15,40]; }
+	  if (prms['dYrng'] === undefined ) {
+	      prms['dYrng'] = [-20,20]; }
+
+	  var dX = Util.prototype.random(prms['dXrng']);
+	  var dY = Util.prototype.random(prms['dYrng']);
+
+	  return [dX, dY];
+	};
+
+	Mtn.prototype.draw = function(ctx, origin) {
+
+	  var startPos =  Util.prototype.vDiff(origin, this.parentPos);
+	  var endPos =    Util.prototype.vDiff(origin, this.pos);
+
+	  // ctx.beginPath();
+	  // ctx.moveTo(startPos[0], startPos[1]);
+	  ctx.lineTo(endPos[0], endPos[1]);
+	  // ctx.stroke();
+
+	};
+
+	// Mtn.prototype.
+
+	module.exports = Mtn;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Mtn = __webpack_require__(7);
+	var Util = __webpack_require__(2);
+	var MtnRange = __webpack_require__(9);
+	var Group = __webpack_require__(6);
+	var Wad = __webpack_require__(4);
+	var Point = __webpack_require__(10);
+	var Circle = __webpack_require__(5);
+	// var
+
+	function Game() {
+	  this.items = [];
+	}
+
+	Game.prototype.startWorld = function(options) {
+
+	  wad = new Wad();
+	  wad.dPos = [-500,0];
+
+	  world = new Group();
+
+	  var p =  new Point();
+	  var pp = new Point();
+
+	  p.dPos = [-400,150];
+	  pp.dPos = [400,150];
+
+	  world.addChild(p);
+	  world.addChild(pp);
+
+	  c = new Circle();
+	  c.radius = 74;
+	  c.velocity = [0.0, -0.8];
+	  this.items.push(c);
+
+
+	  rightArm = new Group();
+	  rightArm.dPos = [-100,-100];
+
+	  var r1 = new Point();
+	  var r2 = new Point();
+	  var r3 = new Point();
+	  var r4 = new Point();
+	  r1.dPos = [-40,-20];
+	  r2.dPos = [-40,100];
+	  r3.dPos = [100,200];
+	  r4.dPos = [100,-20];
+
+	  rightArm.addChild(r1);
+	  rightArm.addChild(r2);
+	  rightArm.addChild(r3);
+	  rightArm.addChild(r4);
+
+	  // this.items.push(rightArm);
+	  this.items.push(world);
+	  // this.items.push(wad);
+
+	};
+
+	Game.prototype.GRAVITY = [0, 0.00098];
+	Game.prototype.NEGATIVE_GRAVITY = [0, -0.00098];
+
+	Game.prototype.tick = function(dT) {
+
+	  //check for collisions   ??
+	  //check for other events ??
+	  // actually just listeners for this?
+
+	  var collisions = [];
+
+	  for (var i = 0; i < this.items.length; i++) {
+	    for (var j = i + 1; j < this.items.length; j++) {
+
+	      if (this.items[i].collides(this.items[j])) {
+	        collisions.push([this.items[i], this.items[j]]);
+	      }
+
+	    }
+	  }
+
+	  for (var i = 0; i < collisions.length; i++) {
+	    //
+
+
+
+	    collisions[i][0].velocity = [
+	      0, -collisions[i][0].velocity[1]*0.95
+	    ];
+
+	    collisions[i][0].velocity = Util.prototype.vSum(
+	      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
+	      collisions[i][0].velocity
+	    );
+
+	  }
+
+	  for (var i = 0; i < this.items.length; i++) {
+	    this.items[i].move(dT);
+	  }
+
+	};
+
+	Game.prototype.draw = function (ctx, origin) {
+
+	  for (var i = 0; i < this.items.length; i++) {
+	    this.items[i].draw(ctx, origin);
+	  }
+
+	  ctx.lineJoin = 'bevel';
+
+	};
+
+	module.exports = Game;
+
+
+	//mtn ranges to draw
+
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Group = __webpack_require__(8);
+	var Util = __webpack_require__(2);
+	var Mtn = __webpack_require__(7);
+
+	function MtnRange(view, options) {
+
+	  this.origin = [0,0];
+	  this.nodes = [];
+	  this.view = view
+
+	  this.fill = 'black';
+	  this.fillStatus = 'line-only';
+	  this.lineColor = 'green';
+	  this.lineSize = 5;
+
+	  this.regenerating = {
+	    minPct: 0.5,
+	    maxPct: 1
+	  };
+
+	  if (this.regenerating) {
+	    this.startRng();
+	  }
+
+	};
+
+	MtnRange.prototype.startRng = function() {
+
+	  debugger;
+
+	  var minX = this.view.xMin;
+	  var minY = this.view.yMin;
+	  var maxX = this.view.xRng + minX;
+	  var maxY = this.view.yRng + minY;
+	  var originPos = this.origin;
+	  var parent;
+
+	  var x = minX - (this.view.xRng * this.regenerating.minPct);
+	  var mostRecent = newMtn();
+	  var mostRecentPos = this.origin;
+
+	  while (x < maxX + this.view.xRng * this.regenerating.minPct) {
+
+
+
+	    debugger;
+	    finalPos = Util.prototype.vSum(
+	      Mtn.prototype.genRandomPos(),
+	      mostRecentPos
+	    );
+
+	    if (mostRecentPos === this.origin) { parent = undefined }
+	    toAdd = newMtn(finalPos, originPos);
+
+	    this.nodes.push(mostRecent);
+
+	  }
+
+	}
+
+	MtnRange.prototype.regen = function() {
+
+
+	  var minY = this.view.minX;
+	  var mixY = this.view.minY;
+	  var maxX = this.view.xRng - minX;
+	  var maxY = this.view.yRng - minX;
+
+	}
+
+	MtnRange.prototype.draw = function (ctx) {
+
+	  ctx.beginPath();
+
+	  for (var i = 0; i < this.nodes.length; i++) {
+	    this.nodes[i].tracePath(ctx);
+	  }
+
+	  if (ctx.fill) {
+	    ctx.fillStyle = this.fill;
+	    this.setupFill(ctx);
+	    ctx.fill();
+	  }
+
+
+	  ctx.stroke();
+
+
+	};
+
+	module.exports = MtnRange;
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Group = __webpack_require__(6);
 	var Util = __webpack_require__(2);
 
 	function Point(options){
@@ -1397,40 +1430,6 @@
 	}
 
 	module.exports = Point;
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Group = __webpack_require__(8);
-	var Util = __webpack_require__(2).prototype;
-
-	function Circle(options){
-
-	  this.radius = 0;
-	  this.dPos = [0,0];
-
-	  Group.call(this, options);
-
-	  this.state.inAir = true;
-
-	}
-
-	Util.inherits(Circle, Group);
-
-	Circle.prototype.draw = function(ctx, origin) {
-
-	  var pos = this.screenPos(origin)
-
-	  ctx.beginPath();
-
-	  ctx.arc(pos[0], pos[1], this.radius, 0, Math.PI * 2);
-	  ctx.stroke();
-
-	}
-
-	module.exports = Circle;
 
 
 /***/ }

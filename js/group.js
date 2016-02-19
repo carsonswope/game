@@ -12,7 +12,7 @@ function Group(options) {
 
   this.state = {
     inAir: false
-  }
+  };
 
   this.dPos =         [0,0];
   this.velocity =     [0,0];

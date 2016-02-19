@@ -80,17 +80,16 @@ Game.prototype.tick = function(dT) {
   for (var i = 0; i < collisions.length; i++) {
     //
 
-    collisions[i].velocity = Util.prototype.vSum(
-      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
-      collisions[i].velocity
-    );
-
 
 
     collisions[i][0].velocity = [
-      0, -collisions[i][0].velocity[1] * 0.8
+      0, -collisions[i][0].velocity[1]*0.95
     ];
 
+    collisions[i][0].velocity = Util.prototype.vSum(
+      Util.prototype.vTimesMag(this.NEGATIVE_GRAVITY, dT),
+      collisions[i][0].velocity
+    );
 
   }
 
